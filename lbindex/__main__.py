@@ -1,46 +1,40 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# python lbindex start
-
 from daemon import runner
-
-from scripts import recebeconfig
-from app import main
-
 import logging
 import time
+import lbindex
+import config
+config.set_config()
 
 class App():
    
     def __init__(self):
-        self.stdin_path = daemon['stdin_path']
-        self.stdout_path = daemon['stdout_path']
-        self.stderr_path = daemon['stderr_path']
-        self.pidfile_path = daemon['pidfile_path']
-        self.pidfile_timeout = daemon['pidfile_timeout']
+        self.stdin_path = config.STDIN_PATH
+        self.stdout_path = config.STDOUT_PATH
+        self.stderr_path = config.STDERR_PATH
+        self.pidfile_path = config.PIDFILE_PATH
+        self.pidfile_timeout = config.PIDFILE_TIMEOUT
            
     def run(self):
         while True:
             logger.info('Iniciando rotina de indexação...')
-            main(lbindex['domain'], lbindex['elastic'],
-                 lbindex['force_index'])
-            logger.info('Indexação finalizada com sucesso!')
-            time.sleep(lbindex['sleep_time'])
+            lbindex.main()
+            logger.info("""
+                Indexação finalizada com sucesso!
+                Pausa : %s
+            """ % str(config.SLEEP_TIME))
+            time.sleep(config.SLEEP_TIME)
 
-
-daemon = recebeconfig.setconfigdaemon()
-lbindex = recebeconfig.setconfiglbindex()
-app = App()
 logger = logging.getLogger("LBIndex")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler = logging.FileHandler(daemon['logfile_path'])
+handler = logging.FileHandler(config.LOGFILE_PATH)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-
-daemon_runner = runner.DaemonRunner(app)
+# Run Daemon
+daemon_runner = runner.DaemonRunner(App())
+#This ensures that the logger file handle does not get closed during daemonization
 daemon_runner.daemon_context.files_preserve=[handler.stream]
 daemon_runner.do_action()
-
-# python lbindex stop
