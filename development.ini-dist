@@ -1,0 +1,19 @@
+[LBIndex]
+
+###Url de acesso à api do lightbase
+rest_url: http://api.brlight.net/api
+###Url de acesso ao servidor do elasticsearch
+elastic_search_url: http://10.1.0.148:9200/
+###Tempo entre as leituras em busca de registros (em segundos)
+sleep_time: 15
+###Se marcado com 'true', todos os registros serão indexados, mesmo os que foram indexados anteriormente
+force_index: false
+
+[Daemon]
+
+stdin_path: /dev/null
+stdout_path: /dev/tty
+stderr_path: /dev/tty
+pidfile_path: /var/run/lbindex.pid
+logfile_path: /var/log/lbindex.log
+pidfile_timeout: 5
