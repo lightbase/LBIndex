@@ -1,39 +1,80 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import lbrest
+from lbrest import LBRest
+from multiprocessing import Pool
 import config
+import datetime
+import time
+import os
+import sys
 
 def main():
-
-    logger.info ('Iniciando rotina indexacao ...')
+    """
+    """
+    lbrest = LBRest()
     bases = lbrest.get_bases()
     if bases:
-        for _base in bases:
-            id = _base['id_base']
-            base = _base['nome_base']
-            index_time = _base['index_time']
-            index_url = _base['nome_base']
+        pool = Pool(processes=len(bases))
+        pool.map(index_registries, bases)
 
-            base_json = lbrest.get_base_json(id)
-            if base_json:
+def index_registries(args):
+    """ Index each registry from base """
 
-                logger.info('Comecando indexacao da base %s ...' % base)
-                registries = lbrest.get_registries(base)
-                if registries:
-                    index_registries(base, base_json, registries)
-                else:
-                    logger.info('Nenhum registro encontrado.')
+    base = args['nome_base']
+    index_time = args['index_time']
+    index_url = args['index_url']
 
-def index_registries(base, base_json, registries):
+    while(1):
+        logger.info('STARTING PROCESS EXECUTION FOR %s' % base)
+        # Get initial time
+        ti = datetime.datetime.now()
 
-    for registry in registries:
-        id = registry['id_reg']
-        full_reg = lbrest.get_full_reg(base, id)
-        if full_reg:
-            indexed = lbrest.index_member(base, base_json, full_reg, id)
-            if indexed:
-                lbrest.update_dt_index(base, id)
+        # Execute process
+        base_indexer = BaseIndexer(base, index_url)
+        base_indexer.run_indexing()
+
+        # Get final time
+        tf = datetime.datetime.now()
+
+        # Calculate interval
+        execution_time = tf - ti
+        _index_time = datetime.timedelta(minutes=index_time)
+
+        if execution_time >= _index_time:
+            interval = 0
+        else:
+            interval = _index_time - execution_time
+
+        interval_minutes = (interval.seconds//60)%60
+
+        #logger.info('Finished execution for base %s, will wait for %s minutes' % (base, interval_minutes))
+        logger.info('Finished execution for base %s, will wait for %s seconds' % (base, interval.seconds))
+
+        # Sleep interval
+        time.sleep(interval.seconds)
+        pid = os.getppid()
+        if pid == 1:
+            logger.info('STOPPING PROCESS EXECUTION FOR %s' % base)
+            sys.exit(1)
+
+class BaseIndexer():
+
+    def __init__(self, base, index_url):
+        self.base = base
+        self.lbrest = LBRest(base, index_url)
+        self.registries = self.lbrest.get_registries()
+
+    def run_indexing(self):
+
+        for registry in self.registries:
+            id = registry['id_reg']
+            full_reg = self.lbrest.get_full_reg(id)
+
+            if full_reg:
+                indexed = self.lbrest.index_member(full_reg, id)
+
+                if indexed:
+                    self.lbrest.update_dt_index(id)
 
 logger = logging.getLogger("LBIndex")
-

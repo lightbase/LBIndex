@@ -1,10 +1,6 @@
 from setuptools import setup, find_packages
 
-
-
 requires = [
-    'lockfile>=0.8',
-    'python-daemon>=1.5.4'
     'ConfigParser',
     'requests',
     'pyelasticsearch',
@@ -28,6 +24,5 @@ setup(
         "Natural Language :: Portuguese (Brazilian)",
         "Programming Language :: Python :: 2.7",
         "Topic :: Database :: Database Engines/Servers",
-
     ]
 )
