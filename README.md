@@ -1,4 +1,9 @@
 
+=======
+LBIndex
+=======
+
+Index module for Lightbase database
 LBINDEX INSTALLATION
 
 # First install required libs:
