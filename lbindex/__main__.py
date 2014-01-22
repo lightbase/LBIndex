@@ -1,40 +1,55 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from daemon import runner
 import logging
-import time
 import lbindex
+from lbdaemon import Daemon
 import config
+from requests.exceptions import *
+import traceback
+import sys
+
 config.set_config()
 
-class App():
-   
-    def __init__(self):
-        self.stdin_path = config.STDIN_PATH
-        self.stdout_path = config.STDOUT_PATH
-        self.stderr_path = config.STDERR_PATH
-        self.pidfile_path = config.PIDFILE_PATH
-        self.pidfile_timeout = config.PIDFILE_TIMEOUT
-           
-    def run(self):
-        while True:
-            logger.info('Iniciando rotina de indexação...')
-            lbindex.main()
-            logger.info("""
-                Indexação finalizada com sucesso!
-                Pausa : %s
-            """ % str(config.SLEEP_TIME))
-            time.sleep(config.SLEEP_TIME)
-
+# Set up log configurations
 logger = logging.getLogger("LBIndex")
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler = logging.FileHandler(config.LOGFILE_PATH)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-# Run Daemon
-daemon_runner = runner.DaemonRunner(App())
-#This ensures that the logger file handle does not get closed during daemonization
-daemon_runner.daemon_context.files_preserve=[handler.stream]
-daemon_runner.do_action()
+
+class LBIndex(Daemon):
+    """ Light Base Golden Extractor Daemon
+    """
+    def run(self):
+        while True:
+            try:
+                lbindex.main()
+            except (ConnectionError, Timeout) as e:
+                logger.error('Não foi possivel estabelecer conexão com o servidor! ' + config.REST_URL)
+            except Exception as e:
+                logger.critical('UNCAUGHT EXCEPTION : %s' % traceback.format_exc())
+                sys.exit(1)
+
+if __name__ == "__main__":
+
+    daemon = LBIndex(config.PIDFILE_PATH)
+
+    if len(sys.argv) == 2:
+        if 'start' == sys.argv[1]:
+            print('starting daemon ...')
+            daemon.start()
+        elif 'stop' == sys.argv[1]:
+            daemon.stop()
+            print('daemon stopped!')
+        elif 'restart' == sys.argv[1]:
+            daemon.restart()
+            print('daemon restarted!')
+        else:
+            print "Unknown command"
+            sys.exit(2)
+        sys.exit(0)
+    else:
+        print("usage: %s start|stop|restart" % sys.argv[0])
+        sys.exit(2)
