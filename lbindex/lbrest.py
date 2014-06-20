@@ -9,9 +9,9 @@ import json
 
 class LBRest():
 
-    def __init__(self, base=None, index_url=None):
+    def __init__(self, base=None, idx_exp_url=None):
         self.base = base
-        self.index_url = index_url
+        self.idx_exp_url = idx_exp_url
 
     def get_bases(self):
         """ Get all bases which has to index registries
@@ -19,11 +19,12 @@ class LBRest():
         bases = [ ]
         params = """{
             "select": [
-                "nome_base",
-                "index_time",
-                "index_url"
+                "name",
+                "idx_exp_time",
+                "idx_exp_url"
             ],
-            "literal": "index_export is true"
+            "literal": "idx_exp is true",
+            "limit": null
         }"""
         req = requests.get(config.REST_URL, params={'$$':params})
         try:
@@ -39,8 +40,8 @@ class LBRest():
     def get_passed_registries(self):
         registries = [ ]
         params = {'$$':"""{
-            "select":["id_reg_orig", "dt_last_up_orig"],
-            "literal": "base = '%s'",
+            "select":["id_doc_orig", "dt_last_up_orig"],
+            "literal": "nm_base = '%s'",
             "limit": null
             }""" % self.base }
         url = config.REST_URL + '/log_lbindex/reg'
@@ -54,15 +55,15 @@ class LBRest():
                 Erro ao recuperar registros da base %s'. Resposta: %s
             """ % ('log_lbindex', req._content))
 
-        return {reg['id_reg_orig']: reg['dt_last_up_orig'] for reg in registries}
+        return {reg['id_doc_orig']: reg['dt_last_up_orig'] for reg in registries}
         
     def get_registries(self):
         """Função que lista todos os registros a serem indexados"""
         registries = [ ]
         if config.FORCE_INDEX:
-            params = {'$$':'{"select":["id_reg", "dt_last_up"]}'}
+            params = {'$$':'{"select":["id_doc", "dt_last_up"], "limit":null}'}
         else:
-            params = {'$$':'{"select":["id_reg", "dt_last_up"],"literal":"dt_index_tex is null"}'}
+            params = {'$$':'{"select":["id_doc", "dt_last_up"],"literal":"dt_idx is null", "limit":null}'}
 
         url = config.REST_URL + '/' + self.base + '/reg'
         req = requests.get(url, params=params)
@@ -78,9 +79,9 @@ class LBRest():
         passed = self.get_passed_registries()
         _registries = [ ]
         for reg in registries:
-            if reg['id_reg'] in passed:
-                dt_last_up = passed[reg['id_reg']]
-                if dt_last_up != reg['dt_last_up']:
+            if reg['_metadata']['id_doc'] in passed:
+                dt_last_up = passed[reg['_metadata']['id_doc']]
+                if dt_last_up != reg['_metadata']['dt_last_up']:
                     _registries.append(reg)
             else:
                 _registries.append(reg)
@@ -104,10 +105,10 @@ class LBRest():
         return response
 
     def index_member(self, registry, id, dt_last_up):
-        logger.info('Indexando registro %s da base %s na url %s ...' % (str(id), self.base, self.index_url))
+        logger.info('Indexando registro %s da base %s na url %s ...' % (str(id), self.base, self.idx_exp_url))
         try:
 
-            http, space, address, _index, _type = self.index_url.split('/')
+            http, space, address, _index, _type = self.idx_exp_url.split('/')
             es = ElasticSearch('/'.join([http, space, address]))
             es.index(_index, _type, registry, id=id)
             return True
@@ -115,15 +116,15 @@ class LBRest():
         except Exception as e:
             error_msg = """
                 Erro ao indexar registro %s da base %s na url %s'. Mensagem de erro: %s
-            """ % (str(id), self.base, self.index_url, str(e))
+            """ % (str(id), self.base, self.idx_exp_url, str(e))
             logger.error(error_msg)
             self.write_error(id, dt_last_up, error_msg)
             return False
 
     def update_dt_index(self, id, dt_last_up):
         logger.info('Alterando data de indexacao do registro %s da base %s ...' % (str(id), self.base))
-        params = {'dt_index_tex': str(datetime.datetime.now())}
-        url = config.REST_URL + '/' + self.base + '/reg/' + str(id)
+        params = {'value': datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+        url = config.REST_URL + '/' + self.base + '/reg/' + str(id) + '/_metadata/dt_idx'
         req = requests.put(url, params=params)
         try:
             req.raise_for_status()
@@ -136,18 +137,18 @@ class LBRest():
             self.write_error(id, dt_last_up, error_msg)
         return False
 
-    def write_error(self, id_reg, dt_last_up, error_msg):
+    def write_error(self, id_doc, dt_last_up, error_msg):
         """ Write errors to LightBase
         """
         error = {
-            'base': self.base,
-            'id_reg_orig': id_reg,
+            'nm_base': self.base,
+            'id_doc_orig': id_doc,
             'error_msg': error_msg,
             'dt_error': datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
             'dt_last_up_orig': dt_last_up
         }
         url = config.REST_URL + '/log_lbindex/reg'
-        data = {'json_reg': json.dumps(error)}
+        data = {'value': json.dumps(error)}
         req = requests.post(url, data=data)
         try:
             req.raise_for_status()

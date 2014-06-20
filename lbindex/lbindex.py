@@ -15,29 +15,29 @@ import traceback
 def index_registries(args):
     """ Index each registry from base """
 
-    base = args['nome_base']
-    index_time = args['index_time']
-    index_url = args['index_url']
+    base = args['metadata']['name']
+    idx_exp_time = args['metadata']['idx_exp_time']
+    idx_exp_url = args['metadata']['idx_exp_url']
 
     while True:
         logger.info('STARTING PROCESS EXECUTION FOR %s' % base)
 
         try:
-            base_indexer = BaseIndexer(base, index_time, index_url)
+            base_indexer = BaseIndexer(base, idx_exp_time, idx_exp_url)
             base_indexer.run_indexing()
 
         except (ConnectionError, Timeout) as e:
-            logger.critical('Could not connect to server! ' + index_url)
+            logger.critical('Could not connect to server! ' + idx_exp_url)
 
         except Exception as e:
             logger.critical('Uncaught Exception : %s' % traceback.format_exc())
 
 class BaseIndexer():
 
-    def __init__(self, base, index_time, index_url):
+    def __init__(self, base, idx_exp_time, idx_exp_url):
         self.base = base
-        self.index_time = index_time
-        self.lbrest = LBRest(base, index_url)
+        self.idx_exp_time = idx_exp_time
+        self.lbrest = LBRest(base, idx_exp_url)
         self.registries = self.lbrest.get_registries()
 
     def run_indexing(self):
@@ -53,8 +53,8 @@ class BaseIndexer():
             # Check if Daemon has stopped
             self.check_ppid()
 
-            id = registry['id_reg']
-            dt_last_up = registry['dt_last_up']
+            id = registry['_metadata']['id_doc']
+            dt_last_up = registry['_metadata']['dt_last_up']
 
             full_reg = self.lbrest.get_full_reg(id, dt_last_up)
 
@@ -72,12 +72,12 @@ class BaseIndexer():
 
         # Calculate interval
         execution_time = tf - ti
-        _index_time = datetime.timedelta(minutes=self.index_time)
+        _idx_exp_time = datetime.timedelta(minutes=self.idx_exp_time)
 
-        if execution_time >= _index_time:
+        if execution_time >= _idx_exp_time:
             interval = 0
         else:
-            interval = _index_time - execution_time
+            interval = _idx_exp_time - execution_time
 
         if type(interval) is not int:
             interval_minutes = (interval.seconds//60)%60
