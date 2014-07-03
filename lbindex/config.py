@@ -4,8 +4,8 @@ import ConfigParser
 def set_config():
 
     config = ConfigParser.ConfigParser()
-    #config.read('production.ini')
-    config.read('development.ini')
+    config.read('production.ini')
+    #config.read('development.ini')
 
     global REST_URL
     global FORCE_INDEX
@@ -25,7 +25,6 @@ def set_config():
         FORCE_INDEX = False
     else:
         raise Exception('opcao "force_index" deve ser "true" ou "false"!')
-    SLEEP_TIME = int(config.get('LBIndex', 'sleep_time'))
 
     # Daemon configuration 
     PIDFILE_PATH = config.get('Daemon', 'pidfile_path')

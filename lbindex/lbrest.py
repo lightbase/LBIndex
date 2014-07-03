@@ -55,7 +55,12 @@ class LBRest():
                 Erro ao recuperar registros da base %s'. Resposta: %s
             """ % ('log_lbindex', req._content))
 
-        return {reg['id_doc_orig']: reg['dt_last_up_orig'] for reg in registries}
+
+        resp = {} 
+        for reg in registries:
+            resp[reg['id_doc_orig']] = reg['dt_last_up_orig']
+        return resp
+        #return {reg['id_doc_orig']: reg['dt_last_up_orig'] for reg in registries}
         
     def get_registries(self):
         """Função que lista todos os registros a serem indexados"""

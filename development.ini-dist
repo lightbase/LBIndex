@@ -1,8 +1,9 @@
 [LBIndex]
 
-###Url de acesso à api do lightbase
-rest_url: http://api.brlight.net/api
-###Se marcado com 'true', todos os registros serão indexados, mesmo os que foram indexados anteriormente
+### Url de acesso à api do lightbase
+rest_url: http://0.0.0.0
+
+### Se marcado com 'true', todos os registros serão indexados, mesmo os que foram indexados anteriormente
 force_index: false
 
 [Daemon]
