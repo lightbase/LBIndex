@@ -4,6 +4,7 @@ requires = [
     'ConfigParser',
     'requests',
     'pyelasticsearch',
+    'liblightbase'
     ]
 
 setup(

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import json
 import config
 import logging
@@ -7,6 +6,10 @@ import requests
 import datetime
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch.exceptions import ElasticHttpNotFoundError
+import model
+
+logger = logging.getLogger("LBIndex")
+
 
 class LBRest():
 
@@ -39,6 +42,11 @@ class LBRest():
         return bases
 
     def get_passed_registries(self):
+        """
+        Realiza leitura da base de log de indexação
+        """
+        # Cria base de log se não existir
+        self.create_log_base()
         registries = [ ]
         params = {'$$':"""{
             "select":["id_doc_orig", "dt_last_up_orig"],
@@ -219,6 +227,22 @@ class LBRest():
             logger.error(error_msg)
         return False
 
+    @staticmethod
+    def create_log_base():
+        """
+        Cria base de log do índice caso não exista
+        """
+        log_base = model.LogBase()
+        response = log_base.get_base()
+        logger.info("33333333333333333333333333333333333333: %s", response)
+        if not response:
+            # Cria a base já que ela não existe
+            logger.info("Criando base de log do índice...")
+            result = log_base.create_base()
+            if result is None:
+                logger.error("Erro na criação da base de log: \n%s", response.text)
+                return False
+            else:
+                logger.info("Base de log criada com sucesso!")
 
-logger = logging.getLogger("LBIndex")
-
+        return True
