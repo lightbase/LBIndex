@@ -53,7 +53,7 @@ class Daemon:
 
         os.dup2(null, sys.stdin.fileno())
         os.dup2(null, sys.stdout.fileno())
-        os.dup2(null, sys.stderr.fileno())
+        #os.dup2(null, sys.stderr.fileno())
 
         os.close(null)
 

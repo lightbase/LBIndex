@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from logging.handlers import RotatingFileHandler
 from lbindex import index_registries
 from lbdaemon import Daemon
 from lbrest import LBRest
@@ -15,7 +16,9 @@ config.set_config()
 logger = logging.getLogger("LBIndex")
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler = logging.FileHandler(config.LOGFILE_PATH)
+#handler = logging.FileHandler(config.LOGFILE_PATH)
+max_bytes = 1024*1024*20 # 20 MB
+handler = RotatingFileHandler(config.LOGFILE_PATH, maxBytes=max_bytes, backupCount=10, encoding=None)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
@@ -38,6 +41,7 @@ class LBIndex(Daemon):
                 self.is_running = True
                 try:
                     pool = Pool(processes=len(bases))
+                    logger.info('## STARTING LBINDEX PROCESS ##')
                     pool.map(index_registries, bases)
                 except Exception as e:
                     logger.critical(str(e))

@@ -11,6 +11,7 @@ def set_config():
     global FORCE_INDEX
     global PIDFILE_PATH
     global LOGFILE_PATH
+    global DEFAULT_LIMIT
 
     #---------------------#
     # Configuration Start #
@@ -25,6 +26,8 @@ def set_config():
         FORCE_INDEX = False
     else:
         raise Exception('opcao "force_index" deve ser "true" ou "false"!')
+
+    DEFAULT_LIMIT = int(config.get('LBIndex', 'default_limit'))
 
     # Daemon configuration 
     PIDFILE_PATH = config.get('Daemon', 'pidfile_path')

@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import logging
-from lbrest import LBRest
-from multiprocessing import Pool
-from requests.exceptions import ConnectionError
-from requests.exceptions import Timeout
-import config
-import datetime
-import time
 import os
 import sys
+import time
+import config
+import logging
+import datetime
 import traceback
+from lbrest import LBRest
+from multiprocessing import Pool
+from requests.exceptions import Timeout
+from requests.exceptions import ConnectionError
 
 def index_registries(args):
     """ Index each registry from base """
@@ -20,7 +20,7 @@ def index_registries(args):
     idx_exp_url = args['metadata']['idx_exp_url']
 
     while True:
-        logger.info('STARTING PROCESS EXECUTION FOR %s' % base)
+        #logger.info('STARTING PROCESS EXECUTION FOR %s' % base)
 
         try:
             base_indexer = BaseIndexer(base, idx_exp_time, idx_exp_url)
@@ -64,9 +64,21 @@ class BaseIndexer():
                 if indexed:
                     self.lbrest.update_dt_index(id, dt_last_up)
 
+        self.delete_indices()
+
         # Get final time
         tf = datetime.datetime.now()
         self.sleep(ti, tf)
+
+    def delete_indices(self):
+        index_errors = self.lbrest.get_errors()
+
+        for registry in index_errors:
+
+            deleted = self.lbrest.delete_index(registry)
+
+            if deleted:
+                self.lbrest.delete_error(registry)
 
     def sleep(self, ti, tf):
 
@@ -85,8 +97,8 @@ class BaseIndexer():
         else:
             interval_minutes = interval_seconds = interval
 
-        logger.info('Finished execution for base %s, will wait for %s minutes'
-            % (self.base, str(interval_minutes)))
+        #logger.info('Finished execution for base %s, will wait for %s minutes'
+        #    % (self.base, str(interval_minutes)))
 
         # Sleep interval
         time.sleep(interval_seconds)

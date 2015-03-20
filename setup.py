@@ -4,7 +4,6 @@ requires = [
     'ConfigParser',
     'requests',
     'pyelasticsearch',
-    'ordereddict==1.1'
     ]
 
 setup(
