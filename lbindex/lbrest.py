@@ -6,6 +6,7 @@ import requests
 import datetime
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch.exceptions import ElasticHttpNotFoundError
+from pyelasticsearch.exceptions import IndexAlreadyExistsError
 import model
 
 logger = logging.getLogger("LBIndex")
@@ -16,6 +17,9 @@ class LBRest():
     def __init__(self, base=None, idx_exp_url=None):
         self.base = base
         self.idx_exp_url = idx_exp_url
+        if self.idx_exp_url is not None:
+            http, space, address, _index, _type = self.idx_exp_url.split('/')
+            self.es = ElasticSearch('/'.join([http, space, address]))
 
     def get_bases(self):
         """ Get all bases which has to index registries
@@ -126,8 +130,7 @@ class LBRest():
         try:
 
             http, space, address, _index, _type = self.idx_exp_url.split('/')
-            es = ElasticSearch('/'.join([http, space, address]))
-            es.index(_index, _type, registry, id=id)
+            self.es.index(_index, _type, registry, id=id)
             return True
 
         except Exception as e:
@@ -194,12 +197,53 @@ class LBRest():
             """ % (url, req._content))
         return errors
 
+    def create_index(self):
+        """
+        Cria índice com as opções de mapeamento padrão
+        Atualiza o índice se já estiver criado
+        """
+        settings = {
+            "settings": {
+                # "number_of_shards": "5",
+                # "number_of_replicas": "1",
+                "analysis.analyzer.default.filter.0": "lowercase",
+                "analysis.analyzer.default.filter.1": "asciifolding",
+                "analysis.analyzer.default.tokenizer": "standard",
+                "analysis.analyzer.default.type": "custom",
+                "analysis.filter.pt_stemmer.type": "stemmer",
+                "analysis.filter.pt_stemmer.name": "portuguese"
+            },
+            "mappings": {
+                "document": {
+                    "_timestamp": {
+                        "enabled": "true"
+                    }
+                }
+            }
+        }
+
+        http, space, address, _index, _type = self.idx_exp_url.split('/')
+        try:
+            result = self.es.create_index(
+                index=_index,
+                settings=settings
+            )
+        except IndexAlreadyExistsError as e:
+            logger.info("O índice já existe. Tentando atualizar o mapping...")
+            self.es.close_index(index=_index)
+            result = self.es.update_settings(
+                index=_index,
+                settings=settings
+            )
+            logger.info("Mapping atualizado com sucesso. Abrindo o índice...")
+            self.es.open_index(index=_index)
+            logger.info("Índice reaberto com sucesso!")
+
     def delete_index(self, registry):
         id = registry['id_doc']
         try:
             http, space, address, _index, _type = self.idx_exp_url.split('/')
-            es = ElasticSearch('/'.join([http, space, address]))
-            es.delete(_index, _type, id=id)
+            self.es.delete(_index, _type, id=id)
             return True
 
         except ElasticHttpNotFoundError as e:

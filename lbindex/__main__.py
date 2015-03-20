@@ -4,6 +4,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 from lbindex import index_registries
+from lbindex import create_index
 from lbdaemon import Daemon
 from lbrest import LBRest
 from multiprocessing import Pool
@@ -21,6 +22,7 @@ max_bytes = 1024*1024*20 # 20 MB
 handler = RotatingFileHandler(config.LOGFILE_PATH, maxBytes=max_bytes, backupCount=10, encoding=None)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
 
 class LBIndex(Daemon):
     """ Light Base Golden Extractor Daemon
@@ -46,6 +48,17 @@ class LBIndex(Daemon):
                 except Exception as e:
                     logger.critical(str(e))
 
+    @staticmethod
+    def index():
+        """
+        Cria índice para todas as bases
+        """
+        lbrest = LBRest()
+        bases_list = lbrest.get_bases()
+        for base in bases_list:
+            create_index(base)
+
+
 if __name__ == "__main__":
 
     daemon = LBIndex(config.PIDFILE_PATH)
@@ -60,6 +73,9 @@ if __name__ == "__main__":
         elif 'restart' == sys.argv[1]:
             print('restarting daemon ...')
             daemon.restart()
+        elif 'index' == sys.argv[1]:
+            print("Atualizando índice para as bases...")
+            daemon.index()
         else:
             print "Unknown command"
             sys.exit(2)
