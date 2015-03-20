@@ -234,7 +234,6 @@ class LBRest():
         """
         log_base = model.LogBase()
         response = log_base.get_base()
-        logger.info("33333333333333333333333333333333333333: %s", response)
         if not response:
             # Cria a base já que ela não existe
             logger.info("Criando base de log do índice...")
