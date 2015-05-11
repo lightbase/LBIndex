@@ -27,26 +27,15 @@ def index_registries(args):
             base_indexer.run_indexing()
 
         except (ConnectionError, Timeout) as e:
-            logger.critical('Could not connect to server! ' + idx_exp_url)
+            logger.critical("""
+                Could not connect to server! %s. 
+                Waiting for %s minutes to run next.
+                """ % (config.REST_URL, str(file_ext_time))
+            )  
+            time.sleep(datetime.timedelta(minutes=int(file_ext_time)).seconds)
 
         except Exception as e:
             logger.critical('Uncaught Exception : %s' % traceback.format_exc())
-
-
-def create_index(args):
-    """
-    Cria índice para a base
-
-    :param args: BaAse e metadados para indexar
-    """
-    base = args['metadata']['name']
-    idx_exp_time = args['metadata']['idx_exp_time']
-    idx_exp_url = args['metadata']['idx_exp_url']
-
-    logger.info("Criando indice para a base %s", base)
-    base_indexer = BaseIndexer(base, idx_exp_time, idx_exp_url)
-    base_indexer.create_indices()
-
 
 class BaseIndexer():
 
@@ -85,13 +74,6 @@ class BaseIndexer():
         # Get final time
         tf = datetime.datetime.now()
         self.sleep(ti, tf)
-
-    def create_indices(self):
-        """
-        Cria os índices necessários
-        """
-        self.lbrest.create_index()
-        return
 
     def delete_indices(self):
         index_errors = self.lbrest.get_errors()
