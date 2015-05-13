@@ -4,6 +4,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 from lbindex import index_registries
+from lbindex import create_index
 from lbdaemon import Daemon
 from lbrest import LBRest
 from multiprocessing import Pool
