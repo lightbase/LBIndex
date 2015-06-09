@@ -30,12 +30,13 @@ def index_registries(args):
             logger.critical("""
                 Could not connect to server! %s. 
                 Waiting for %s minutes to run next.
-                """ % (config.REST_URL, str(file_ext_time))
+                """ % (idx_exp_url, str(idx_exp_time))
             )  
-            time.sleep(datetime.timedelta(minutes=int(file_ext_time)).seconds)
+            time.sleep(datetime.timedelta(minutes=int(idx_exp_time)).seconds)
 
         except Exception as e:
             logger.critical('Uncaught Exception : %s' % traceback.format_exc())
+            time.sleep(datetime.timedelta(minutes=int(idx_exp_time)).seconds)
 
 class BaseIndexer():
 
