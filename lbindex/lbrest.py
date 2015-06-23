@@ -11,7 +11,6 @@ import model
 
 logger = logging.getLogger("LBIndex")
 
-
 class LBRest():
 
     def __init__(self, base=None, idx_exp_url=None):

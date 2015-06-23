@@ -13,8 +13,7 @@ from liblightbase.lbutils import conv
 from liblightbase.lbsearch.search import *
 from requests.exceptions import HTTPError
 
-log = logging.getLogger()
-
+logger = logging.getLogger("LBIndex")
 
 class LogBase(object):
     """
@@ -181,5 +180,5 @@ class LogBase(object):
             response = self.baserest.get(self.lbbase)
             return True
         except HTTPError as e:
-            log.error("Base %s not found\n%s", self.lbbase.metadata.name, e.strerror)
+            logger.error("Base %s not found\n%s", self.lbbase.metadata.name, e.strerror)
             return False
