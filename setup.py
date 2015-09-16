@@ -17,7 +17,7 @@ requires = [
     ]
 setup(
     name = "LBIndex",
-    version = "0.1.3",
+    version = "0.1.3a",
     author = "Lightbase",
     author_email = "pedro.ricardo@lightbase.com.br",
     url = "https://pypi.python.org/pypi/LBIndex",

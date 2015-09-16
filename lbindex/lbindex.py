@@ -20,7 +20,11 @@ def index_registries(args):
     idx_exp_url = args['metadata']['idx_exp_url']
 
     while True:
-        #logger.info('STARTING PROCESS EXECUTION FOR %s' % base)
+        #logger.info("""
+        #            STARTING PROCESS EXECUTION FOR %s -- PID %s
+        #            IN PARENT PROCESS -- PID %s
+        #            """ % (base, os.getpid(), os.getppid())
+        #            )
 
         try:
             base_indexer = BaseIndexer(base, idx_exp_time, idx_exp_url)
