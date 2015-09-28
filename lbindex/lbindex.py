@@ -20,11 +20,7 @@ def index_registries(args):
     idx_exp_url = args['metadata']['idx_exp_url']
 
     while True:
-        #logger.info("""
-        #            STARTING PROCESS EXECUTION FOR %s -- PID %s
-        #            IN PARENT PROCESS -- PID %s
-        #            """ % (base, os.getpid(), os.getppid())
-        #            )
+        #logger.info('STARTING PROCESS EXECUTION FOR %s' % base)
 
         try:
             base_indexer = BaseIndexer(base, idx_exp_time, idx_exp_url)
@@ -34,13 +30,12 @@ def index_registries(args):
             logger.critical("""
                 Could not connect to server! %s. 
                 Waiting for %s minutes to run next.
-                """ % (idx_exp_url, str(idx_exp_time))
+                """ % (config.REST_URL, str(file_ext_time))
             )  
-            time.sleep(datetime.timedelta(minutes=int(idx_exp_time)).seconds)
+            time.sleep(datetime.timedelta(minutes=int(file_ext_time)).seconds)
 
         except Exception as e:
             logger.critical('Uncaught Exception : %s' % traceback.format_exc())
-            time.sleep(datetime.timedelta(minutes=int(idx_exp_time)).seconds)
 
 class BaseIndexer():
 
@@ -49,6 +44,7 @@ class BaseIndexer():
         self.idx_exp_time = idx_exp_time
         self.lbrest = LBRest(base, idx_exp_url)
         self.registries = self.lbrest.get_registries()
+        self.force_index = FORCE_INDEX
 
     def run_indexing(self):
 
@@ -91,27 +87,30 @@ class BaseIndexer():
                 self.lbrest.delete_error(registry)
 
     def sleep(self, ti, tf):
-
-        # Calculate interval
-        execution_time = tf - ti
-        _idx_exp_time = datetime.timedelta(minutes=self.idx_exp_time)
-
-        if execution_time >= _idx_exp_time:
-            interval = 0
+        if self.force_index == 'true':
+	    interval_seconds = 0 
+	    time.sleep(interval_seconds)
         else:
-            interval = _idx_exp_time - execution_time
+            # Calculate interval
+	    execution_time = tf - ti
+	    _idx_exp_time = datetime.timedelta(minutes=self.idx_exp_time)
 
-        if type(interval) is not int:
-            interval_minutes = (interval.seconds//60)%60
-            interval_seconds = interval.seconds
-        else:
-            interval_minutes = interval_seconds = interval
+	    if execution_time >= _idx_exp_time:
+	        interval = 0
+	    else:
+	        interval = _idx_exp_time - execution_time
 
-        #logger.info('Finished execution for base %s, will wait for %s minutes'
-        #    % (self.base, str(interval_minutes)))
+	    if type(interval) is not int:
+	        interval_minutes = (interval.seconds//60)%60
+	        interval_seconds = interval.seconds
+	    else:
+	        interval_minutes = interval_seconds = interval
 
-        # Sleep interval
-        time.sleep(interval_seconds)
+	    #logger.info('Finished execution for base %s, will wait for %s minutes'
+	    #    % (self.base, str(interval_minutes)))
+
+	    # Sleep interval
+	    time.sleep(interval_seconds)
 
     def check_ppid(self):
         """ Stop process if daemon is not running
