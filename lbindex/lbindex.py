@@ -44,7 +44,6 @@ class BaseIndexer():
         self.idx_exp_time = idx_exp_time
         self.lbrest = LBRest(base, idx_exp_url)
         self.registries = self.lbrest.get_registries()
-        self.force_index = FORCE_INDEX
 
     def run_indexing(self):
 
@@ -87,30 +86,26 @@ class BaseIndexer():
                 self.lbrest.delete_error(registry)
 
     def sleep(self, ti, tf):
-        if self.force_index == 'true':
-	    interval_seconds = 0 
-	    time.sleep(interval_seconds)
-        else:
-            # Calculate interval
-	    execution_time = tf - ti
-	    _idx_exp_time = datetime.timedelta(minutes=self.idx_exp_time)
+        # Calculate interval
+	execution_time = tf - ti
+	_idx_exp_time = datetime.timedelta(minutes=self.idx_exp_time)
 
-	    if execution_time >= _idx_exp_time:
-	        interval = 0
-	    else:
-	        interval = _idx_exp_time - execution_time
+	if execution_time >= _idx_exp_time:
+	    interval = 0
+	else:
+	    interval = _idx_exp_time - execution_time
 
-	    if type(interval) is not int:
-	        interval_minutes = (interval.seconds//60)%60
-	        interval_seconds = interval.seconds
-	    else:
-	        interval_minutes = interval_seconds = interval
+	if type(interval) is not int:
+	    interval_minutes = (interval.seconds//60)%60
+	    interval_seconds = interval.seconds
+	else:
+	    interval_minutes = interval_seconds = interval
 
-	    #logger.info('Finished execution for base %s, will wait for %s minutes'
-	    #    % (self.base, str(interval_minutes)))
+	#logger.info('Finished execution for base %s, will wait for %s minutes'
+	#    % (self.base, str(interval_minutes)))
 
-	    # Sleep interval
-	    time.sleep(interval_seconds)
+	# Sleep interval
+	time.sleep(interval_seconds)
 
     def check_ppid(self):
         """ Stop process if daemon is not running
