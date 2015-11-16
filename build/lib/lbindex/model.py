@@ -1,14 +1,9 @@
-#!/usr/bin/python
+#!/bin/env python
 # -*- coding: utf-8 -*-
-
 __author__ = 'eduardo'
-
 import logging
 import config
-
 import requests
-from requests.exceptions import HTTPError
-
 from liblightbase import lbrest
 from liblightbase.lbbase.struct import Base, BaseMetadata
 from liblightbase.lbbase.lbstruct.group import *
@@ -16,16 +11,18 @@ from liblightbase.lbbase.lbstruct.field import *
 from liblightbase.lbbase.content import Content
 from liblightbase.lbutils import conv
 from liblightbase.lbsearch.search import *
+from requests.exceptions import HTTPError
 
 logger = logging.getLogger("LBIndex")
 
-
 class LogBase(object):
-    """Base que contém o log de erros de indexação."""
-
+    """
+    Base que contém o log de erros de indexação
+    """
     def __init__(self):
-        """Método construtor."""
-
+        """
+        Método construtor
+        """
         self.rest_url = config.REST_URL
         self.baserest = lbrest.BaseREST(
             rest_url=self.rest_url,
@@ -122,8 +119,9 @@ class LogBase(object):
 
     @property
     def metaclass(self):
-        """Retorna metaclass para essa base."""
-
+        """
+        Retorna metaclass para essa base
+        """
         return self.lbbase.metaclass()
 
     def create_base(self):
@@ -132,7 +130,6 @@ class LogBase(object):
         :param crimes: One twitter crimes object to be base model
         :return: LB Base object
         """
-
         lbbase = self.lbbase
         self.baserest.response_object = True
         response = self.baserest.create(lbbase)
@@ -147,7 +144,6 @@ class LogBase(object):
         :param lbbase: LBBase object instance
         :return: True or Error if base was not excluded
         """
-
         response = self.baserest.delete(self.lbbase)
         if response.status_code == 200:
             return True
@@ -155,8 +151,9 @@ class LogBase(object):
             raise IOError('Error excluding base from LB')
 
     def update_base(self):
-        """Update base from LB Base."""
-
+        """
+        Update base from LB Base
+        """
         response = self.baserest.update(self.lbbase)
         if response.status_code == 200:
             return True
@@ -167,7 +164,6 @@ class LogBase(object):
         """
         Get document by ID on base
         """
-
         url = self.rest_url + '/' + self.lbbase.metadata.name + '/doc/' + id_doc
         response = requests.get(url)
         if response.status_code > 300:
@@ -179,7 +175,6 @@ class LogBase(object):
         """
         Get base JSON
         """
-
         self.baserest.response_object = False
         try:
             response = self.baserest.get(self.lbbase)

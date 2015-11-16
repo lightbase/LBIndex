@@ -1,0 +1,17 @@
+Metadata-Version: 1.0
+Name: LBIndex
+Version: 0.1.3
+Summary: Indexer Daemon for the neo-lightbase service
+Home-page: https://pypi.python.org/pypi/LBIndex
+Author: Lightbase
+Author-email: pedro.ricardo@lightbase.com.br
+License: GPLv2
+Description: UNKNOWN
+Keywords: index elasticsearch lightbase daemon
+Platform: UNKNOWN
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Environment :: No Input/Output (Daemon)
+Classifier: License :: OSI Approved :: GNU General Public License v2 (GPLv2)
+Classifier: Natural Language :: Portuguese (Brazilian)
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Database :: Database Engines/Servers
