@@ -107,6 +107,7 @@ class Daemon:
                 pid = int(pf.read().strip())
         except IOError:
             pid = None
+
         if not pid:
             message = "pidfile {0} does not exist. " + \
                     "Daemon not running?\n"
