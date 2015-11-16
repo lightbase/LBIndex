@@ -59,6 +59,29 @@ class LBIndex(Daemon):
                 except Exception as e:
                     logger.critical(str(e))
 
+    def status(self):
+        """
+            Check process is running
+        """
+        # Check for a pidfile to see if the daemon already runs
+        try:
+            with open(self.pidfile, 'r') as pf:
+                pid = int(pf.read().strip())
+        except IOError:
+            pid = None
+
+        if pid is None:
+            message = "pidfile {0} is not running. \n"
+            sys.stderr.write(message.format(self.pidfile))
+            sys.exit(1)
+        elif self.check_pid(pid):
+            message = "pidfile {0} is running. \n"
+            sys.stderr.write(message.format(self.pidfile))
+            sys.exit(1)
+        else:
+            message = "pidfile {0} is not running. \n"
+            sys.stderr.write(message.format(self.pidfile))
+            sys.exit(1)
     @staticmethod
     def index():
         """
@@ -85,6 +108,8 @@ if __name__ == "__main__":
         elif 'restart' == sys.argv[1]:
             print('restarting daemon ...')
             daemon.restart()
+        elif 'status' == sys.argv[1]:
+            daemon.status()
         elif 'index' == sys.argv[1]:
             print("Atualizando índice para as bases...")
             daemon.index()

@@ -9,6 +9,7 @@ import sys
 import time
 import atexit
 import signal
+import subprocess
 
 
 class Daemon:
@@ -83,10 +84,15 @@ class Daemon:
             pid = None
 
         if pid:
-            message = "pidfile {0} already exist. " + \
-                    "Daemon already running?\n"
-            sys.stderr.write(message.format(self.pidfile))
-            sys.exit(1)
+            if self.check_pid(pid):
+                message = "pidfile {0} already exist. " + \
+                        "Daemon already running?\n"
+                sys.stderr.write(message.format(self.pidfile))
+                sys.exit(1)
+            else:
+                self.delpid()
+
+        self.killer(os.getpid())
 
         # NOTE: Start the daemon!
         self.daemonize()
@@ -101,7 +107,6 @@ class Daemon:
                 pid = int(pf.read().strip())
         except IOError:
             pid = None
-
         if not pid:
             message = "pidfile {0} does not exist. " + \
                     "Daemon not running?\n"
@@ -110,10 +115,12 @@ class Daemon:
             # NOTE: Not an error in a restart!
             return
 
+        self.killer(pid)
+
         # NOTE: Try killing the daemon process!
         try:
             while 1:
-                os.kill(pid, signal.SIGTERM)
+                os.killpg(pid, signal.SIGTERM)
                 time.sleep(0.1)
         except OSError as err:
             e = str(err.args)
@@ -126,8 +133,38 @@ class Daemon:
 
     def restart(self):
         """Restart the daemon."""
+
         self.stop()
         self.start()
+
+    def check_pid(self, pid):
+        """Check For the existence of a unix pid.
+            @return bool
+        """
+
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        else:
+            return True
+
+    def killer(self, ppid):
+        """Kills all processes that are not descendants of the main corrent 
+        process.
+        """
+
+        process = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE)
+        out, err = process.communicate()
+        for line in out.splitlines():
+            if 'lbindex/ start' in line:
+                pid = int(line.split()[1])
+
+                if not pid == ppid:
+                    try:
+                        os.kill(pid, signal.SIGKILL)
+                    except OSError as e:
+                        sys.stderr.write(str(s))
 
     def run(self):
         """You should override this method when you subclass Daemon.
