@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import time
 import config
 import logging
 from logging.handlers import RotatingFileHandler
@@ -58,12 +59,13 @@ class LBIndex(Daemon):
                     pool.map(index_registries, bases_indexes)
                 except Exception as e:
                     logger.critical(str(e))
+            else:
+                time.sleep(30)
 
     def status(self):
-        """
-            Check process is running
-        """
-        # Check for a pidfile to see if the daemon already runs
+        """Check process is running."""
+
+        # NOTE: Check for a pidfile to see if the daemon already runs!
         try:
             with open(self.pidfile, 'r') as pf:
                 pid = int(pf.read().strip())
@@ -84,9 +86,8 @@ class LBIndex(Daemon):
             sys.exit(1)
     @staticmethod
     def index():
-        """
-        Cria índice para todas as bases
-        """
+        """Cria índice para todas as bases."""
+
         lbrest = LBRest()
         bases_list = lbrest.get_bases()
         for base in bases_list:

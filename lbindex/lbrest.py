@@ -31,6 +31,7 @@ class LBRest():
             self.es = ElasticSearch("http://" + self.idx_exp_host)
         self.txt_mapping = txt_mapping
         self.cfg_idx = cfg_idx
+        self.con_refsd = False
 
     def get_index(self, bases_list):
         """Obter a a configuração de indexação p/ as bases."""
@@ -40,8 +41,9 @@ class LBRest():
             idx_exp_url = base['metadata']['idx_exp_url']
             nm_idx = idx_exp_url.split('/')[3]
             url_txt_idx = config.REST_URL + "/_txt_idx/" + nm_idx
-            req = requests.get(url_txt_idx)
+            req = None
             try:
+                req = requests.get(url_txt_idx)
                 req.raise_for_status()
                 idx_resp = req.json()
             except requests.exceptions.HTTPError as e:
@@ -51,14 +53,24 @@ class LBRest():
                     # indexação setada na rota "_txt_idx"! By Questor
                     idx_resp = None
                 else:
+                    fail_content = None
+                    if req is not None:
+                        fail_content = req._content
+                    else:
+                        fail_content = str(e)
                     logger.error("Falha HTTP ao tentar obter configuração de "\
-                    "índice textual! URL: %s. Reposta: %s" % 
-                    (config.REST_URL, req._content))
+                    "índice textual! URL: %s. FALHA: %s" % 
+                    (config.REST_URL, fail_content))
                     return []
             except Exception as e:
+                fail_content = None
+                if req is not None:
+                    fail_content = req._content
+                else:
+                    fail_content = str(e)
                 logger.error("Erro ao tentar obter a configuração de índice "\
-                "textual! URL: %s. Reposta: %s" % 
-                (config.REST_URL, req._content))
+                "textual! URL: %s. FALHA: %s" % 
+                (config.REST_URL, fail_content))
                 return []
             bases_indexes.append({"base": base, "index": idx_resp})
         return bases_indexes
@@ -73,6 +85,7 @@ class LBRest():
         # um "workaround" sendo o correto que a estrutura de dados 
         # na table "lb_base" esteja atualizada! By Questor
         bases = [ ]
+        req = None
         try:
             params = """{
                 "select": [
@@ -90,6 +103,7 @@ class LBRest():
             bases = response["results"]
         except Exception as e:
             bases = [ ]
+            req = None
             try:
                 params = """{
                     "literal": "idx_exp is true",
@@ -100,9 +114,32 @@ class LBRest():
                 response = req.json()
                 bases = response["results"]
             except Exception as e:
+                # NOTE: A variável de instância "self.con_refsd" 
+                # serve p/ evitar que o aviso mais abaixo seja 
+                # exibido repetidamente detonando o log! By Questor
+                if self.con_refsd:
+                    return bases
+
+                # NOTE: Estou usando '"Connection refused" in str(e)' 
+                # pq "raise_for_status()" mais acima não retorna uma 
+                # exceção do tipo "requests.exceptions.HTTPError" de 
+                # forma q possamos usar o código em "status_code" 
+                # tratar erro de forma mais específica! By Questor
+                if "Connection refused" in str(e) and not self.con_refsd:
+                    logger.error('Erro ao obter a lista bases para '\
+                    'indexação. URL: %s. FALHA: Servidor indisponivel! '\
+                    'HTTPCode: 502 (Connection refused)!' % (config.REST_URL))
+                    self.con_refsd = True
+                    return bases
+                self.con_refsd = False
+                fail_content = None
+                if req is not None:
+                    fail_content = req._content
+                else:
+                    fail_content = str(e)
                 logger.error("""
-                    Erro ao tentar recuperar bases. url: %s. Reposta: %s
-                """ % (config.REST_URL, req._content))
+                    Erro ao obter a lista bases para indexação. URL: %s. FALHA: %s
+                """ % (config.REST_URL, fail_content))
         return bases
 
     def get_passed_registries(self):
@@ -120,16 +157,22 @@ class LBRest():
             "limit": null
             }""" % self.base}
         url = config.REST_URL + '/log_lbindex/doc'
-        req = requests.get(url, params=params)
 
+        req = None
         try:
+            req = requests.get(url, params=params)
             req.raise_for_status()
             response = req.json()
             registries = response["results"]
         except Exception as e:
+            fail_content = None
+            if req is not None:
+                fail_content = req._content
+            else:
+                fail_content = str(e)
             logger.error("""
-                1 Erro ao recuperar registros da base %s'. Resposta: %s
-            """ % ('log_lbindex', req._content))
+                1 Erro ao recuperar registros da base %s'. FALHA: %s
+            """ % ('log_lbindex', fail_content))
 
         resp = {}
         for reg in registries:
@@ -156,16 +199,22 @@ class LBRest():
         params['$$'] = params['$$'] % config.DEFAULT_LIMIT
 
         url = config.REST_URL + '/' + self.base + '/doc'
-        req = requests.get(url, params=params)
 
+        req = None
         try:
+            req = requests.get(url, params=params)
             req.raise_for_status()
             response = req.json()
             registries = response["results"]
         except Exception as e:
+            fail_content = None
+            if req is not None:
+                fail_content = req._content
+            else:
+                fail_content = str(e)
             logger.error("""
-                Erro ao recuperar registros da base %s'. Resposta: %s
-            """ % (self.base, req._content))
+                Erro ao recuperar registros da base %s'. FALHA: %s
+            """ % (self.base, fail_content))
 
         '''
         TODO: Essa lógica poderia ser mais eficiente... A 
@@ -225,14 +274,21 @@ class LBRest():
 
         response = None
         url = config.REST_URL + '/' + self.base + '/doc/' + str(id) + '/full'
-        req = requests.get(url)
+
+        req = None
         try:
+            req = requests.get(url)
             req.raise_for_status()
             response = req.json()
         except Exception as e:
+            fail_content = None
+            if req is not None:
+                fail_content = req._content
+            else:
+                fail_content = str(e)
             error_msg = """
-                Erro ao recuperar registro %s na base %s'. Resposta: %s
-            """ % (str(id), self.base, req._content)
+                Erro ao recuperar registro %s na base %s'. FALHA: %s
+            """ % (str(id), self.base, fail_content)
 
             # TODO: Pq duas chamadas as logs? By Questor
             logger.error(error_msg)
@@ -357,13 +413,20 @@ class LBRest():
             strftime('%d/%m/%Y %H:%M:%S')}
         url = (config.REST_URL + '/' + self.base + '/doc/' + str(id) + 
             '/_metadata/dt_idx')
-        req = requests.put(url, params=params)
+
+        req = None
         try:
+            req = requests.put(url, params=params)
             req.raise_for_status()
             return True
         except Exception as e:
+            fail_content = None
+            if req is not None:
+                fail_content = req._content
+            else:
+                fail_content = str(e)
             error_msg = 'Erro ao alterar data de indexacao do registro %s na '\
-                'base %s. Resposta: %s' % (str(id), self.base, req._content)
+                'base %s. FALHA: %s' % (str(id), self.base, fail_content)
             logger.error(error_msg)
             self.write_error(id, dt_last_up, error_msg)
         return False
@@ -380,13 +443,19 @@ class LBRest():
         }
         url = config.REST_URL + '/log_lbindex/doc'
         data = {'value': json.dumps(error)}
-        req = requests.post(url, data=data)
+        req = None
         try:
+            req = requests.post(url, data=data)
             req.raise_for_status()
         except Exception as e:
+            fail_content = None
+            if req is not None:
+                fail_content = req._content
+            else:
+                fail_content = str(e)
             logger.error("""
-                0 Erro ao tentar escrever erro no Lightbase. Reposta: %s
-            """ % req._content)
+                0 Erro ao tentar escrever erro no Lightbase. FALHA: %s
+            """ % fail_content)
 
     def get_errors(self):
         """Get all bases which has to index registries."""
@@ -397,15 +466,22 @@ class LBRest():
             "limit": 250
         }""" % (self.base)
         url = config.REST_URL + '/_index_error'
-        req = requests.get(url, params={'$$':params})
+
+        req = None
         try:
+            req = requests.get(url, params={'$$':params})
             req.raise_for_status()
             response = req.json()
             errors = response["results"]
         except Exception as e:
+            fail_content = None
+            if req is not None:
+                fail_content = req._content
+            else:
+                fail_content = str(e)
             logger.error("""
-                Erro ao tentar recuperar erros de indice. url: %s. Reposta: %s
-            """ % (url, req._content))
+                Erro ao tentar recuperar erros de indice. URL: %s. FALHA: %s
+            """ % (url, fail_content))
         return errors
 
     # TODO: Esse método serve para criar/atualizar p/ uma 
@@ -479,14 +555,21 @@ class LBRest():
             """/_index_error?$$={"literal":"base = '%s' and id_doc = %d"}""")
         url = url % (registry['base'], registry['id_doc'])
         logger.info('Deletando registro de erro de indice na url %s' % url)
-        req = requests.delete(url)
+
+        req = None
         try:
+            req = requests.delete(url)
             req.raise_for_status()
             return True
         except Exception as e:
+            fail_content = None
+            if req is not None:
+                fail_content = req._content
+            else:
+                fail_content = str(e)
             error_msg = """
-                Erro ao deletar erro de indice. Resposta: %s
-            """ % (req._content)
+                Erro ao deletar erro de indice. FALHA: %s
+            """ % (fail_content)
             logger.error(error_msg)
         return False
 
