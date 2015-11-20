@@ -39,10 +39,10 @@ class LogBase(object):
 
     @property
     def lbbase(self):
-        """
-        Generate LB Base object
+        """Generate LB Base object
         :return:
         """
+
         nm_base = Field(**dict(
             name='nm_base',
             description='Nome da base',
