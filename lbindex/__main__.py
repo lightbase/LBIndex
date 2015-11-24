@@ -3,6 +3,11 @@
 
 import sys
 import time
+import getopt
+# import argparse
+
+import pkg_resources  # part of setuptools
+
 import config
 import logging
 from logging.handlers import RotatingFileHandler
@@ -62,6 +67,13 @@ class LBIndex(Daemon):
             else:
                 time.sleep(30)
 
+    def cmd(self, opt):  
+        """??????????????????????????????????"""
+
+        print("COMMAND! COMMAND! COMMAND! COMMAND! COMMAND! COMMAND!")
+        print(str(opt))
+        print("COMMAND! COMMAND! COMMAND! COMMAND! COMMAND! COMMAND!")
+
     def status(self):
         """Check process is running."""
 
@@ -84,6 +96,8 @@ class LBIndex(Daemon):
             message = "pidfile {0} is not running. \n"
             sys.stderr.write(message.format(self.pidfile))
             sys.exit(1)
+
+    # TODO: Estático por que? By Questor
     @staticmethod
     def index():
         """Cria índice para todas as bases."""
@@ -97,27 +111,95 @@ if __name__ == "__main__":
 
     daemon = LBIndex(config.PIDFILE_PATH)
 
+    # if len(sys.argv) == 2:
+        # if 'start' == sys.argv[1]:
+
+            # # NOTE: Start point! By Questor
+            # print('starting daemon ...')
+            # daemon.start()
+        # elif 'stop' == sys.argv[1]:
+            # print('stopping daemon ...')
+            # daemon.stop()
+        # elif 'restart' == sys.argv[1]:
+            # print('restarting daemon ...')
+            # daemon.restart()
+        # elif 'status' == sys.argv[1]:
+            # daemon.status()
+        # elif 'index' == sys.argv[1]:
+            # print("Atualizando índice para as bases...")
+            # daemon.index()
+        # else:
+            # print "Unknown command"
+            # sys.exit(2)
+        # sys.exit(0)
+    # else:
+        # print("usage: %s start|stop|restart" % sys.argv[0])
+        # sys.exit(2)
+
+    if len(sys.argv) < 2:
+        print("Missing arguments!")
+        print("More info with: \"lbindex -h\"")
+        sys.exit(0)
+        sys.exit(2)
+
     if len(sys.argv) == 2:
         if 'start' == sys.argv[1]:
 
             # NOTE: Start point! By Questor
-            print('starting daemon ...')
+            print('Starting daemon ...')
             daemon.start()
+            sys.exit(0)
         elif 'stop' == sys.argv[1]:
-            print('stopping daemon ...')
+            print('Stopping daemon ...')
             daemon.stop()
+            sys.exit(0)
         elif 'restart' == sys.argv[1]:
-            print('restarting daemon ...')
+            print('Restarting daemon ...')
             daemon.restart()
+            sys.exit(0)
         elif 'status' == sys.argv[1]:
             daemon.status()
+            sys.exit(0)
         elif 'index' == sys.argv[1]:
             print("Atualizando índice para as bases...")
             daemon.index()
+            sys.exit(0)
         else:
-            print "Unknown command"
+            opts = []
+            args = []
+            version = str(pkg_resources.require("lbindex")[0].version)
+            try:
+                opts, args = getopt.getopt(sys.argv[1:], 'h', ["help"])
+                if not opts:
+                    raise getopt.GetoptError("")
+                print(
+"""lbindex - LightBase Textual Index Service %s
+
+usage: lbindex <start>                     Start the service
+   or: lbindex <stop>                      Stop the service
+   or: lbindex <restart>                   Restart the service
+   or: lbindex <status>                    Get service status
+   or: lbindex <index>                     Index/reindex indexable bases
+   or: lbindex <cmd -a <value>>            Pass specific commands
+
+Arguments:
+   -a  or  --action     Command to execute (need cmd arg)
+   -h  or  --help       Print Help (this message) and exit""" % (version))
+            except getopt.GetoptError as e:
+                print("Unknown option(s) and/or argument(s): \"" + str(sys.argv[1:]) + "\"")
+                print("More info with: \"lbindex -h\"")
+                sys.exit(0)
+                sys.exit(2)
+
+    if sys.argv[1] == 'cmd' and len(sys.argv) >= 3:
+        opts = []
+        args = []
+        try:
+            opts, args = getopt.getopt(sys.argv[2:], 'a:d:', ["action="])
+            daemon.cmd(opts)
+            sys.exit(0)
+        except getopt.GetoptError as e:
+            print("Unknown option argument(s): \"" + str(sys.argv[2:]) + "\"")
+            print("More info with: \"lbindex -h\"")
+            sys.exit(0)
             sys.exit(2)
-        sys.exit(0)
-    else:
-        print("usage: %s start|stop|restart" % sys.argv[0])
-        sys.exit(2)
