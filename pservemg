@@ -1,0 +1,99 @@
+#!/bin/bash
+
+stop_svc() {
+    printf "Stopping pserve:"
+    get_pid
+    if [ "$GET_PID_RTN" != "" ]; then
+        kill -9 "$GET_PID_RTN"
+        rm -f pservepid
+        echo "                                            [  OK  ]"
+    else
+        echo "                                            [FAILED]"
+    fi
+}
+
+start_svc() {
+    printf "Starting pserve:"
+    get_pid
+    if [ "$GET_PID_RTN" == "" ]; then
+        rm -f pserveop
+        jobs &>/dev/null
+        /usr/local/lbneo/virtenvlb2.6/bin/pserve development.ini >pserveop 2>&1 &
+        new_job_started="$(jobs -n)"
+        if [ -n "$new_job_started" ]; then
+            PID=$!
+        else
+            PID=
+        fi
+
+        sleep 1
+
+        PSERVEOP=$(<pserveop)
+        rm -f pserveop
+
+        # socket.error: [Errno 98] Address already in use
+        # if [[ $PSERVEOP == *"Address already in use"* ]]; then
+        if [[ $PSERVEOP != "" ]]; then
+            echo "                                            [FAILED]"
+            echo "$PSERVEOP"
+        else
+            printf "$PID" > pservepid
+            echo "                                            [  OK  ]"
+        fi
+    else
+        echo ""
+    fi
+}
+
+status_svc() {
+    get_pid
+    if [ "$GET_PID_RTN" == "" ]; then
+        echo "pserve is stopped"
+    else
+        echo "pserve (pid  $GET_PID_RTN) is running..."
+    fi
+}
+
+restart_svc() {
+    stop_svc
+    start_svc
+}
+
+GET_PID_RTN=""
+get_pid() {
+    GET_PID_RTN=""
+    if [ -f pservepid ]; then
+        PSERVEPIDVAL=$(<pservepid)
+        if ps -p $PSERVEPIDVAL > /dev/null
+        then
+           GET_PID_RTN="$PSERVEPIDVAL"
+        else
+           rm -f pservepid
+        fi
+    fi
+}
+
+case "$@" in
+    start)
+        echo "start"
+        start_svc
+    ;;
+    stop)
+        echo "stop"
+        stop_svc
+    ;;
+    restart)
+        echo "restart"
+        restart_svc
+    ;;
+    status)
+        echo "status"
+        status_svc
+    ;;
+    *)
+        echo "Usage: pservemg {start|stop|restart|status}"
+        exit 1
+    ;;
+esac
+
+exit 1

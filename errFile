@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "/usr/local/lbneo/virtenvlb2.6/bin/pserve", line 9, in <module>
+    load_entry_point('pyramid==1.6b2', 'console_scripts', 'pserve')()
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/pyramid-1.6b2-py2.6.egg/pyramid/scripts/pserve.py", line 60, in main
+    return command.run()
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/pyramid-1.6b2-py2.6.egg/pyramid/scripts/pserve.py", line 398, in run
+    serve()
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/pyramid-1.6b2-py2.6.egg/pyramid/scripts/pserve.py", line 377, in serve
+    server(app)
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/PasteDeploy-1.5.2-py2.6.egg/paste/deploy/loadwsgi.py", line 189, in server_wrapper
+    **context.local_conf)
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/PasteDeploy-1.5.2-py2.6.egg/paste/deploy/util.py", line 55, in fix_call
+    val = callable(*args, **kw)
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/waitress-0.8.10-py2.6.egg/waitress/__init__.py", line 21, in serve_paste
+    serve(app, **kw)
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/waitress-0.8.10-py2.6.egg/waitress/__init__.py", line 11, in serve
+    server = _server(app, **kw)
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/waitress-0.8.10-py2.6.egg/waitress/server.py", line 49, in create_server
+    return cls(application, map, _start, _sock, _dispatcher, adj)
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/waitress-0.8.10-py2.6.egg/waitress/server.py", line 86, in __init__
+    self.bind_server_socket()
+  File "/usr/local/lbneo/virtenvlb2.6/lib/python2.6/site-packages/waitress-0.8.10-py2.6.egg/waitress/server.py", line 194, in bind_server_socket
+    self.bind((self.adj.host, self.adj.port))
+  File "/usr/lib64/python2.6/asyncore.py", line 333, in bind
+    return self.socket.bind(addr)
+  File "<string>", line 1, in bind
+socket.error: [Errno 98] Address already in use
