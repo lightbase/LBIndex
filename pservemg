@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# NOTE: Trata-se de um utilitário p/ usar o "pserve" como um serviço 
+# padrão. Embora, "pserve" não seja indicado para produção optamos por 
+# "pserve" pq os comandos recebidos pelo LBI são os mínimos possíveis. 
+# Perceba ainda que o controle desse serviço é todo "stand alone" (PID 
+# e tudo o mais). Isso é útil para termos vários serviços funcionando 
+# de forma independente e em portas diferentes! By Questor
+
+
 stop_svc() {
     printf "Stopping pserve:"
     get_pid
@@ -31,8 +39,6 @@ start_svc() {
         PSERVEOP=$(<pserveop)
         rm -f pserveop
 
-        # socket.error: [Errno 98] Address already in use
-        # if [[ $PSERVEOP == *"Address already in use"* ]]; then
         if [[ $PSERVEOP != "" ]]; then
             echo "                                            [FAILED]"
             echo "$PSERVEOP"
@@ -59,6 +65,9 @@ restart_svc() {
     start_svc
 }
 
+# NOTE: Obtêm o arquivo "PID" ("pservepid") criado por "pservemg" 
+# para controle do processo do "pserve"! Se o "PID" atual não for 
+# mais válido deleta o "pservepid"! By Questor
 GET_PID_RTN=""
 get_pid() {
     GET_PID_RTN=""
@@ -73,6 +82,9 @@ get_pid() {
     fi
 }
 
+# NOTE: Usamos "$@" ao invés "$1" por ser mais seguro, pois "$@" traz todos os 
+# parâmetros após diferente de "$1" onde "start foo" dispararia "start" no 
+# serviço! By Questor
 case "$@" in
     start)
         echo "start"

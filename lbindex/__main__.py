@@ -203,3 +203,9 @@ Arguments:
             print("More info with: \"lbindex -h\"")
             sys.exit(0)
             sys.exit(2)
+
+    if len(sys.argv) >= 3:
+        print("Invalid arguments!")
+        print("More info with: \"lbindex -h\"")
+        sys.exit(0)
+        sys.exit(2)

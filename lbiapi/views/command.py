@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from . import CustomView
+from response import Cmd
+from response import HTTPCode
 
 
 class CommandView(CustomView):
@@ -21,18 +23,22 @@ class CommandView(CustomView):
         print(str(method))
         print("< ------------------------------------------------------------")
 
+        result = self.context.post_command(params)
+        cmds = Cmd(result, self.http_codes.code200)
+        # self.response.cmds(cmds)
+        self.cmds = cmds
 
-        rtn_vals = self.context.post_command(params)
-        self.rtn_vals.append(rtn_vals)
-        return self.cmd_resp()
+        # self.cmds.append(rtn_vals)
+        # return self.response.render_response()
+        return self.render_response()
         # return self.context.post_command()
 
     def get_command(self):
         """??????????????????????????????"""
 
         rtn_vals = self.context.get_command()
-        self.rtn_vals.append(rtn_vals)
-        return self.cmd_resp()
+        self.cmds.append(rtn_vals)
+        return self.http_resp()
 
     def put_command(self):
         """??????????????????????????????"""

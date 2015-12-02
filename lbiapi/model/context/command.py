@@ -1,10 +1,9 @@
-#!/bin/env python
 # -*- coding: utf-8 -*-
 
 import subprocess
 from pyramid.renderers import render_to_response
 
-from ..LbIndex import LbIndex
+from ..lbindex import LbIndex
 
 
 class CommandFactory():
@@ -20,12 +19,6 @@ class CommandFactory():
 
         param_direct = params.get("directive", None)
         post_cmd_out = None
-# usage: lbindex <start>                     Start the service
-# or: lbindex <stop>                      Stop the service
-# or: lbindex <restart>                   Restart the service
-# or: lbindex <status>                    Get service status
-# or: lbindex <index>                     Index/reindex indexable bases
-# or: lbindex <cmd -a <value>>            Pass specific commands
 
         if param_direct == "start":
             print("start")
@@ -35,35 +28,23 @@ class CommandFactory():
             post_cmd_out = self.lb_index.stop()
         elif param_direct == "restart":
             print("restart")
+            post_cmd_out = self.lb_index.restart()
         elif param_direct == "status":
             print("status")
+            post_cmd_out = self.lb_index.status()
         elif param_direct == "index":
             print("index")
+            post_cmd_out = self.lb_index.index()
         elif param_direct == "cmd":
             print("cmd")
             if params.get("action", None):
                 print(params["action"])
+                post_cmd_out = self.lb_index.cmd(params["action"])
                 pass
             else:
                 print("Falta o parâmetro \"action\"!")
         else:
             print("Falta o parâmetro \"directive\"!")
-
-        # popen_out = subprocess.Popen(
-            # "cd /usr/local/lbneo/virtenvlb2.6/src/"\
-            # "LBIndex && /usr/local/lbneo/virtenvlb2.6/bin/python "\
-            # "lbindex stop", 
-            # shell=True, 
-            # stdout=subprocess.PIPE, 
-            # stderr=subprocess.PIPE)
-        # out, err = popen_out.communicate()
-
-        # output = ""
-        # if out:
-            # output = out
-        # if err:
-            # output = output + err
-
 
         # TODO: Tratar esse retorno! By Questor
         return post_cmd_out
