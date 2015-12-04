@@ -1,118 +1,140 @@
-#!/bin/env python
 # -*- coding: utf-8 -*-
+"""Tratar e normalizar o retorno HTML para esta aplicação."""
 
 from pyramid.renderers import render_to_response
 
 
 class HTTPCode():
-    """????????????????????????????????????????"""
+    """Padronizar os códigos de status HTTP e suas descrições.
+
+    A idéia é que seus atributos sejam usados como um enum.
+    """
 
     def __init__(self):
 
         # 1xx Informational
-        self.code100 = (100, "Continue.")
-        self.code101 = (101, "Switching Protocols.")
-        self.code102 = (102, "Processing.")
+        self.CODE100 = (100, "Continue.")
+        self.CODE101 = (101, "Switching Protocols.")
+        self.CODE102 = (102, "Processing.")
 
         # 2xx Success
-        self.code200 = (200, "OK.")
-        self.code201 = (201, "Created.")
-        self.code202 = (202, "Accepted.")
-        self.code203 = (203, "Non-Authoritative Information.")
-        self.code204 = (204, "No Content.")
-        self.code205 = (205, "Reset Content.")
-        self.code206 = (206, "Partial Content.")
-        self.code207 = (207, "Multi-Status.")
-        self.code208 = (208, "Already Reported.")
-        self.code226 = (226, "IM Used.")
+        self.CODE200 = (200, "OK.")
+        self.CODE201 = (201, "Created.")
+        self.CODE202 = (202, "Accepted.")
+        self.CODE203 = (203, "Non-Authoritative Information.")
+        self.CODE204 = (204, "No Content.")
+        self.CODE205 = (205, "Reset Content.")
+        self.CODE206 = (206, "Partial Content.")
+        self.CODE207 = (207, "Multi-Status.")
+        self.CODE208 = (208, "Already Reported.")
+        self.CODE226 = (226, "IM Used.")
 
         # 3xx Redirection
-        self.code300 = (300, "Multiple Choices.")
-        self.code301 = (301, "Moved Permanently.")
-        self.code302 = (302, "Found.")
-        self.code303 = (303, "See Other.")
-        self.code304 = (304, "Not Modified.")
-        self.code305 = (305, "Use Proxy.")
-        self.code306 = (306, "Switch Proxy.")
-        self.code307 = (307, "Temporary Redirect.")
-        self.code308 = (308, "Permanent Redirect.")
-        self.code308 = (308, "Resume Incomplete.")
+        self.CODE300 = (300, "Multiple Choices.")
+        self.CODE301 = (301, "Moved Permanently.")
+        self.CODE302 = (302, "Found.")
+        self.CODE303 = (303, "See Other.")
+        self.CODE304 = (304, "Not Modified.")
+        self.CODE305 = (305, "Use Proxy.")
+        self.CODE306 = (306, "Switch Proxy.")
+        self.CODE307 = (307, "Temporary Redirect.")
+        self.CODE308 = (308, "Permanent Redirect.")
+        self.CODE308 = (308, "Resume Incomplete.")
 
         # 4xx Client Error
-        self.code400 = (400, "Bad Request.")
-        self.code401 = (401, "Unauthorized.")
-        self.code402 = (402, "Payment Required.")
-        self.code403 = (403, "Forbidden.")
-        self.code404 = (404, "Not Found.")
-        self.code405 = (405, "Method Not Allowed.")
-        self.code406 = (406, "Not Acceptable.")
-        self.code407 = (407, "Proxy Authentication Required.")
-        self.code408 = (408, "Request Timeout.")
-        self.code409 = (409, "Conflict.")
-        self.code410 = (410, "Gone.")
-        self.code411 = (411, "Length Required.")
-        self.code412 = (412, "Precondition Failed.")
-        self.code413 = (413, "Payload Too Large.")
-        self.code414 = (414, "URI Too Long.")
-        self.code415 = (415, "Unsupported Media Type.")
-        self.code416 = (416, "Range Not Satisfiable.")
-        self.code417 = (417, "Expectation Failed.")
-        self.code418 = (418, "I'm a teapot.")
-        self.code419 = (419, "Authentication Timeout.")
-        self.code420 = (420, "Method Failure.")
-        self.code421 = (421, "Misdirected Request.")
-        self.code422 = (422, "Unprocessable Entity.")
-        self.code423 = (423, "Locked.")
-        self.code424 = (424, "Failed Dependency.")
-        self.code426 = (426, "Upgrade Required.")
-        self.code449 = (449, "Retry With.")
-        self.code450 = (450, "Blocked by Windows Parental Controls.")
-        self.code451 = (451, "Unavailable For Legal Reasons.")
-        self.code498 = (498, "Token expired/invalid.")
-        self.code499 = (499, "Client Closed Request.")
+        self.CODE400 = (400, "Bad Request.")
+        self.CODE401 = (401, "Unauthorized.")
+        self.CODE402 = (402, "Payment Required.")
+        self.CODE403 = (403, "Forbidden.")
+        self.CODE404 = (404, "Not Found.")
+        self.CODE405 = (405, "Method Not Allowed.")
+        self.CODE406 = (406, "Not Acceptable.")
+        self.CODE407 = (407, "Proxy Authentication Required.")
+        self.CODE408 = (408, "Request Timeout.")
+        self.CODE409 = (409, "Conflict.")
+        self.CODE410 = (410, "Gone.")
+        self.CODE411 = (411, "Length Required.")
+        self.CODE412 = (412, "Precondition Failed.")
+        self.CODE413 = (413, "Payload Too Large.")
+        self.CODE414 = (414, "URI Too Long.")
+        self.CODE415 = (415, "Unsupported Media Type.")
+        self.CODE416 = (416, "Range Not Satisfiable.")
+        self.CODE417 = (417, "Expectation Failed.")
+        self.CODE418 = (418, "I'm a teapot.")
+        self.CODE419 = (419, "Authentication Timeout.")
+        self.CODE420 = (420, "Method Failure.")
+        self.CODE421 = (421, "Misdirected Request.")
+        self.CODE422 = (422, "Unprocessable Entity.")
+        self.CODE423 = (423, "Locked.")
+        self.CODE424 = (424, "Failed Dependency.")
+        self.CODE426 = (426, "Upgrade Required.")
+        self.CODE449 = (449, "Retry With.")
+        self.CODE450 = (450, "Blocked by Windows Parental Controls.")
+        self.CODE451 = (451, "Unavailable For Legal Reasons.")
+        self.CODE498 = (498, "Token expired/invalid.")
+        self.CODE499 = (499, "Client Closed Request.")
 
         # 5xx Server Error
-        self.code500 = (500, "Internal Server Error.")
-        self.code501 = (501, "Not Implemented.")
-        self.code502 = (502, "Bad Gateway.")
-        self.code503 = (503, "Service Unavailable.")
-        self.code504 = (504, "Gateway Timeout.")
-        self.code505 = (505, "HTTP Version Not Supported.")
-        self.code506 = (506, "Variant Also Negotiates.")
-        self.code507 = (507, "Insufficient Storage.")
-        self.code508 = (508, "Loop Detected.")
-        self.code509 = (509, "Bandwidth Limit Exceeded.")
-        self.code510 = (510, "Not Extended.")
-        self.code598 = (598, "Network read timeout error.")
-        self.code599 = (599, "Network connect timeout error.")
+        self.CODE500 = (500, "Internal Server Error.")
+        self.CODE501 = (501, "Not Implemented.")
+        self.CODE502 = (502, "Bad Gateway.")
+        self.CODE503 = (503, "Service Unavailable.")
+        self.CODE504 = (504, "Gateway Timeout.")
+        self.CODE505 = (505, "HTTP Version Not Supported.")
+        self.CODE506 = (506, "Variant Also Negotiates.")
+        self.CODE507 = (507, "Insufficient Storage.")
+        self.CODE508 = (508, "Loop Detected.")
+        self.CODE509 = (509, "Bandwidth Limit Exceeded.")
+        self.CODE510 = (510, "Not Extended.")
+        self.CODE598 = (598, "Network read timeout error.")
+        self.CODE599 = (599, "Network connect timeout error.")
 
         # Rapid use!
-        self.success = self.code200
-        self.warning = self.code400
-        self.error = self.code500
+        self.success = self.CODE200
+        self.warning = self.CODE400
+        self.error = self.CODE500
 
 class Cmd(object):
-    """????????????????????????"""
+    """Comportar o retorno individual de cada comando.
 
-    def __init__(self, result, code=HTTPCode, message=None):
+    Garantir a integridade do retorno do tipo Cmd.
 
-        # NOTE: ????????????????????! By Questor
-        if not message:
-            message = code[1]
+    Args:
+        result (str, dict): Saída do comando.
+        status_code (HTTPCode): Código HTTP.
+        more_info (Optional[str]): Informação adicional sobre a operação ou 
+            problema. Padrão "".
+
+    Returns:
+        Cmd: Instância de Cmd.
+    """
+
+    def __init__(self, result, http_code=HTTPCode, more_info=""):
 
         self._cmd_resp = {
-            'code': code[0],
-            'message': message,
-            'level': self.get_level(code[0]),
+            'status_code': http_code[0],
+            'status_msg': http_code[1],
+            'more_info': more_info,
+            'level': self.get_level(http_code[0]),
             'result': result
         }
 
     @property
     def cmd_resp(self):
+        """dict: Retornar o dict referente ao tipo Cmd."""
         return self._cmd_resp
 
-    def get_level(self, code):
-        """????????????????????????????????????????"""
+    def get_level(self, status_code):
+        """Define um "level" para o retorno conforme o código HTTP setado.
+
+        Visa facilitar a leitura do retorno no "client side".
+
+        Args:
+            status_code (int): Código HTTP.
+
+        Returns:
+            str: Level.
+        """
 
         success = [100, 102, 200, 201, 202, 207]
         warning = [101, 203, 204, 205, 206, 208, 226, 300, 301, 302, 303, 
@@ -121,25 +143,45 @@ class Cmd(object):
             411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 
             423, 424, 426, 449, 450, 451, 498, 499, 500, 501, 502, 503, 
             504, 505, 506, 507, 508, 509, 510, 598, 599]
-        if code in success:
+        if status_code in success:
             return "success"
-        if code in warning:
+        if status_code in warning:
             return "warning"
-        if code in error:
+        if status_code in error:
             return "error"
 
 class Response(object):
-    """????????????????????????"""
+    """Tratar o retorno HTML.
+
+    Attributes:
+        cmds (list): Lista de todos os comandos solicitados na requisição 
+            HTTP atual.
+        http_code (HTTPCode) = Código de status HTTP da requisição atual.
+        more_info (Optional[str]): Informação adicional sobre a operação ou 
+            problema. Padrão "".
+
+    Returns:
+        Response: Instância de Response.
+    """
 
     def __init__(self):
         self._cmds = []
         self._http_code = None
+        self.more_info = ""
+
+        # NOTE: Como o tipo HTTPCode é intrinsecamente ligado ao 
+        # retorno da aplicação, fiz composição com a classe 
+        # Response! By Questor
         self.http_codes = HTTPCode()
 
     @property
     def http_code(self):
+        """HTTPCode: Retornar o código setado para a resposta HTML.
+
+        Se não houver código HTML setado retorna o código padrão.
+        """
         if not self._http_code:
-            return self.http_codes.code200
+            return self.http_codes.CODE200
         return self._http_code
 
     @http_code.setter
@@ -148,6 +190,7 @@ class Response(object):
 
     @property
     def cmds(self):
+        """List[dict]: Retornar a lista de comandos na operação atual."""
         return self._cmds
 
     @cmds.setter
@@ -155,17 +198,50 @@ class Response(object):
         self._cmds.append(value.cmd_resp)
 
     def render_response(self):
-        """????????????????????????????????????????"""
+        """Gerar o retorno HTML. 
+
+        Após setados todos os retornos de cada comando.
+        """
 
         render_response_out = {'http': {}, 'cmds': self.cmds}
+        status_code = self.http_code[0]
+        status_msg = self.http_code[1]
+        more_info = self.more_info
 
-        # NOTE: ?????????????????????????????????????! By Questor
-        render_response_out['http'] = {
-            'code': self.http_code[0],
-            'message': self.http_code[1],
-        }
+        return finally_render(self.request, 
+                              status_code, 
+                              status_msg, 
+                              more_info, 
+                              self.cmds)
 
-        return render_to_response(
-            "def_json_rend", 
-            render_response_out, 
-            request=self.request)
+def finally_render(request, status_code, status_msg, more_info, cmds):
+    """?????????????????????????????"""
+
+    render_response_out = {'http': {}, 'cmds': cmds}
+
+    # NOTE: Para que a aplicação tenha um nível mais elaborado 
+    # de integração com o modelo HTTP, quando é enviado apenas 
+    # um comando o código de retorno é integrado ao próprio 
+    # retorno HTML! By Questor
+    if len(cmds) == 1:
+        status_code = cmds[0]["status_code"]
+        status_msg = cmds[0]["status_msg"]
+        more_info = cmds[0]["more_info"]
+
+    # NOTE: Trata-se do retorno principal da requisição. Esse 
+    # status sempre coincide com o status do próprio retorno 
+    # HTML! By Questor
+    render_response_out['http'] = {
+        'status_code': status_code,
+        'status_msg': status_msg,
+        'more_info': more_info
+    }
+
+    response = render_to_response(
+        "def_json_rend", 
+        render_response_out, 
+        request=request)
+
+    if len(cmds) == 1:
+        response.status = str(status_code) + " " + status_msg
+    return response

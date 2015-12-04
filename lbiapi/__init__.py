@@ -3,8 +3,10 @@
 from pyramid.config import Configurator
 from pyramid.renderers import JSON
 
-from .model.context.command import CommandFactory
+from .views.error import http_service_exception
 from .views.command import CommandView
+from .model.context.command import CommandFactory
+from .lib.exception import HTTPServiceException
 
 
 def main(global_config, **settings):
@@ -53,6 +55,8 @@ def main(global_config, **settings):
     config.add_view(
         view=CommandView, attr='delete_command', route_name='delete_cmd_rt',
         request_method='DELETE', permission=perms['DELETE'])
+
+    config.add_view(http_service_exception, context=HTTPServiceException)
 
     config.scan()
     return config.make_wsgi_app()

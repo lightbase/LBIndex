@@ -1,51 +1,54 @@
-#!/bin/env python
 # -*- coding: utf-8 -*-
 
 from . import CustomView
 from response import Cmd
-from response import HTTPCode
+from .error import HTTPServiceException
 
 
 class CommandView(CustomView):
-    """??????????????????????????????"""
+    """Tratar a visão referente aos comandos.
+
+    Extende CustomView.
+
+    Args:
+        context (instance): Instância do contexto à ser usado com a view.
+        request (pyramid.request.Request): Request gerado pelo pacote 
+            Pyramid.
+
+    Returns:
+        CommandView: Instância de CommandView.
+    """
 
     def __init__(self, context, request):
         super(CommandView, self).__init__(context, request)
 
     def post_command(self):
-        """??????????????????????????????"""
+        """Tratar o verbo HTTP POST."""
+
+        try:
+            # test = 2/0
+            test = 2/2
+        except Exception as e:
+            raise HTTPServiceException(self.http_codes.CODE500, str(e))
 
         params, method = self.split_req(self.request)
-
-
-        print("> ------------------------------------------------------------")
-        print(str(params))
-        print(str(method))
-        print("< ------------------------------------------------------------")
-
         result = self.context.post_command(params)
-        cmds = Cmd(result, self.http_codes.code200)
-        # self.response.cmds(cmds)
+        cmds = Cmd(result, self.http_codes.CODE200)
         self.cmds = cmds
 
-        # self.cmds.append(rtn_vals)
-        # return self.response.render_response()
         return self.render_response()
-        # return self.context.post_command()
 
     def get_command(self):
-        """??????????????????????????????"""
+        """Tratar o verbo HTTP GET."""
 
-        rtn_vals = self.context.get_command()
-        self.cmds.append(rtn_vals)
-        return self.http_resp()
+        raise HTTPServiceException(self.http_codes.CODE501)
 
     def put_command(self):
-        """??????????????????????????????"""
+        """Tratar o verbo HTTP PUT."""
 
-        return self.context.put_command()
+        raise HTTPServiceException(self.http_codes.CODE501)
 
     def delete_command(self):
-        """??????????????????????????????"""
+        """Tratar o verbo HTTP DELETE."""
 
-        return self.context.delete_command()
+        raise HTTPServiceException(self.http_codes.CODE501)

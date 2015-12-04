@@ -1,21 +1,30 @@
 # -*- coding: utf-8 -*-
 
 import subprocess
-from pyramid.renderers import render_to_response
 
 from ..lbindex import LbIndex
 
 
 class CommandFactory():
-    """??????????????????????????????"""
+    """Tratar o factory referente aos comandos.
+
+    Args:
+        request (pyramid.request.Request): Request gerado pelo pacote 
+            Pyramid.
+
+    Attributes:
+        lb_index (LbIndex): Composição com a classe para controle do LBI.
+
+    Returns:
+        CommandFactory: Instância de CommandFactory.
+    """
 
     def __init__(self, request):
         self.request = request
         self.lb_index = LbIndex(request)
-        pass
 
     def post_command(self, params):
-        """??????????????????????????????"""
+        """Tratar o verbo HTTP POST."""
 
         param_direct = params.get("directive", None)
         post_cmd_out = None
@@ -49,50 +58,17 @@ class CommandFactory():
         # TODO: Tratar esse retorno! By Questor
         return post_cmd_out
 
-        # # print("post_command")
-        # renderer = "../../templates/mytemplate.pt"
-        # return render_to_response(
-            # renderer, 
-            # {'project': 'LBIApi'}, 
-            # request=self.request)
-
     def get_command(self):
-        """??????????????????????????????"""
+        """Tratar o verbo HTTP GET."""
 
-        # print("get_command")
-        popen_out = subprocess.Popen(
-            "cd /usr/local/lbneo/virtenvlb2.6/src/"\
-            "LBIndex && /usr/local/lbneo/virtenvlb2.6/bin/python "\
-            "lbindex stop", 
-            shell=True, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE)
-        out, err = popen_out.communicate()
-
-        output = ""
-        if out:
-            output = out
-        if err:
-            output = output + err
-
-        return output
+        return None
 
     def put_command(self):
-        """??????????????????????????????"""
+        """Tratar o verbo HTTP PUT."""
 
-        # print("put_command")
-        renderer = "../../templates/mytemplate.pt"
-        return render_to_response(
-            renderer, 
-            {'project': 'LBIApi'}, 
-            request=self.request)
+        return None
 
     def delete_command(self):
-        """??????????????????????????????"""
+        """Tratar o verbo HTTP DELETE."""
 
-        # print("delete_command")
-        renderer = "../../templates/mytemplate.pt"
-        return render_to_response(
-            renderer, 
-            {'project': 'LBIApi'}, 
-            request=self.request)
+        return None
