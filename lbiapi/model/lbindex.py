@@ -11,6 +11,7 @@ from ..globals import PY_BASE_DIR
 from ..lib.httpcode import HTTPCode
 from ..lib.exception import HTTPServiceException
 
+
 class LbIndex():
     """API para o o serviço LBI.
 

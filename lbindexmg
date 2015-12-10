@@ -11,7 +11,7 @@
 # By Questor
 
 # NOTE: P/ tornar executável! By Questor
-# export PATH=$PATH:$SCRIPTDIR
+# export PATH=$PATH:<script_dir>
 # chmod +x lbindexmg
 
 # Note: Obtêm o caminho do arquivo "lbindexmg" para que as chamadas sejam 

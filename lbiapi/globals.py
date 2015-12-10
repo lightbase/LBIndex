@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Setar a variável global BASE_DIR."""
+"""Setar as variáveis globais BASE_DIR e PY_BASE_DIR que contém o diretório 
+dos arquivos deste projeto e o caminho para o python que o executa."""
 
 import os
 import sys
