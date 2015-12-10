@@ -3,7 +3,8 @@
 import subprocess
 
 from ..lbindex import LbIndex
-
+from ...lib.httpcode import HTTPCode
+from ...lib.exception import HTTPServiceException
 
 class CommandFactory():
     """Tratar o factory referente aos comandos.
@@ -27,35 +28,45 @@ class CommandFactory():
         """Tratar o verbo HTTP POST."""
 
         param_direct = params.get("directive", None)
-        post_cmd_out = None
+        if len(params) > 2 or (len(params) == 2 and param_direct != "cmd"):
+            raise HTTPServiceException(HTTPCode().CODE400, "Too many fields!")
 
+        if not param_direct:
+            raise HTTPServiceException(
+                HTTPCode().CODE400, 
+                "The \"directive\" field is missing or incorrect!")
+
+        post_cmd_out = None
         if param_direct == "start":
-            print("start")
             post_cmd_out = self.lb_index.start()
         elif param_direct == "stop":
-            print("stop")
             post_cmd_out = self.lb_index.stop()
         elif param_direct == "restart":
-            print("restart")
             post_cmd_out = self.lb_index.restart()
         elif param_direct == "status":
-            print("status")
             post_cmd_out = self.lb_index.status()
         elif param_direct == "index":
-            print("index")
             post_cmd_out = self.lb_index.index()
         elif param_direct == "cmd":
-            print("cmd")
-            if params.get("action", None):
+            try:
+                action_value = params["action"]
+            except Exception as e:
+                raise HTTPServiceException(
+                    HTTPCode().CODE400, 
+                    "The \"action\" field is missing or incorrect!")
+            if action_value:
                 print(params["action"])
                 post_cmd_out = self.lb_index.cmd(params["action"])
                 pass
             else:
-                print("Falta o parâmetro \"action\"!")
+                raise HTTPServiceException(
+                    HTTPCode().CODE400, 
+                    "The \"action\" field does not have a valid value!")
         else:
-            print("Falta o parâmetro \"directive\"!")
+            raise HTTPServiceException(
+                HTTPCode().CODE400, 
+                "The \"directive\" field does not have a valid value!")
 
-        # TODO: Tratar esse retorno! By Questor
         return post_cmd_out
 
     def get_command(self):

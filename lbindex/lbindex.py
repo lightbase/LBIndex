@@ -37,7 +37,9 @@ def index_registries(args):
     while True:
         logger.info('STARTING PROCESS EXECUTION FOR %s' % base)
         try:
-            base_indexer = BaseIndexer(base, idx_exp_time, idx_exp_url, txt_mapping, cfg_idx)
+            base_indexer = BaseIndexer(
+                base, idx_exp_time, 
+                idx_exp_url, txt_mapping, cfg_idx)
             base_indexer.run_indexing()
         except (ConnectionError, Timeout) as e:
             logger.critical("""

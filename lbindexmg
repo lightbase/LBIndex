@@ -1,0 +1,263 @@
+#!/bin/bash
+
+# NOTE: Trata-se de um utilitário p/ usar o "pserve" como um serviço 
+# padrão. Embora, "pserve" não seja indicado para produção optamos por 
+# "pserve" pq os comandos recebidos pelo LBI são os mínimos possíveis. 
+# Perceba ainda que o controle desse serviço é todo "stand alone" (PID 
+# e tudo o mais). Isso é útil para termos vários serviços funcionando 
+# de forma independente e em portas diferentes! Esse utilitário tb 
+# facilita o controle do LBIndex oferecendo um nova "cara" p/ o mesmo. 
+# Até então a implementação atual do esquema em pauta é provisória! 
+# By Questor
+
+# NOTE: P/ tornar executável! By Questor
+# export PATH=$PATH:$SCRIPTDIR
+# chmod +x lbindexmg
+
+# Note: Obtêm o caminho do arquivo "lbindexmg" para que as chamadas sejam 
+# feitas no lugar correto! By Questor
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Note: Informar o caminho python2 onde o LBIndex está instalado! By Questor
+PYTHON2="/usr/local/lbneo/virtenvlb2.6"
+
+# NOTE: Para o serviço pserve (e o LBI na sequência)! By Questor
+stop_pserve() {
+    printf "Stopping pserve:"
+    get_pserve_status
+    if [ "$GET_PSERVE_STATUS_RTN" != "" ]; then
+
+        # NOTE: Usamos "&" como uma manobra p/ não printar a saída em certos 
+        # casos! By Questor
+        kill -9 "$GET_PSERVE_STATUS_RTN" &
+        rm -f pservepid
+        echo "                                            [  OK  ]"
+    else
+        echo "                                            [FAILED]"
+    fi
+    # NOTE: Nos casos onde o comando "start" falha p/ a parte do LBI, não se 
+    # faz necessário tentar para-lo já que ele não está rodando! By Questor
+    if [ "$1" != "only_pserve" ]; then
+        stop_lbi
+    fi
+}
+
+# NOTE: Inicia o serviço pserve (e o LBI na sequência). O comando "jobs" evita 
+# que o script fique presso na linha de execução! By Questor
+start_pserve() {
+    echo "Starting services..."
+    get_pserve_status
+    if [ "$GET_PSERVE_STATUS_RTN" == "" ]; then
+        printf "Starting pserve:"
+        rm -f pserveout
+        jobs &>/dev/null
+        eval "$PYTHON2/bin/pserve development.ini >pserveout 2>&1 &"
+        new_job_started="$(jobs -n)"
+        if [ -n "$new_job_started" ]; then
+            PID=$!
+        else
+            PID=
+        fi
+
+        # NOTE: Como a saída p/ "pserveout" é assíncrona usamos um sleep de 1 
+        # segundo (pode haver dessincronia)! By Questor
+        sleep 1
+
+        PSERVEOUT=$(<pserveout)
+        rm -f pserveout
+
+        if [[ $PSERVEOUT != "" ]]; then
+            echo "                                            [FAILED]"
+            echo "$PSERVEOUT"
+        else
+            printf "$PID" > pservepid
+            echo "                                            [  OK  ]"
+            start_lbi
+        fi
+    # else
+        # echo ""
+    fi
+}
+
+# NOTE: Printa o status do serviço pserve (e do LBI na sequência)! By Questor
+status_pserve() {
+    get_pserve_status
+    if [ "$GET_PSERVE_STATUS_RTN" == "" ]; then
+        echo "pserve is stopped"
+    else
+        echo "pserve (pid  $GET_PSERVE_STATUS_RTN) is running..."
+    fi
+    status_lbi
+}
+
+# NOTE: Reinicia o serviço pserve (e o LBI na sequência)! By Questor
+restart_pserve() {
+    stop_pserve
+    start_pserve
+}
+
+# NOTE: Obtêm o arquivo "PID" ("pservepid") criado por "pservemg" para 
+# controle do processo do "pserve"! Se o "PID" atual não for mais válido 
+# deleta o "pservepid"! By Questor
+GET_PSERVE_STATUS_RTN=""
+get_pserve_status() {
+    GET_PSERVE_STATUS_RTN=""
+    if [ -f pservepid ]; then
+        PSERVEPIDVAL=$(<pservepid)
+        if ps -p $PSERVEPIDVAL > /dev/null
+        then
+           GET_PSERVE_STATUS_RTN="$PSERVEPIDVAL"
+        else
+           rm -f pservepid
+        fi
+    fi
+}
+
+# NOTE: Executa um comando e coloca a saída de stderr e stdout nas variáveis 
+# "GET_STDERR" e "GET_STDOUT"! By Questor
+GET_STDERR=""
+GET_STDOUT=""
+get_stderr_stdout() {
+    GET_STDERR=""
+    GET_STDOUT=""
+    unset t_std t_err
+    eval "$( (eval $1) 2> >(t_err=$(cat); typeset -p t_err) > >(t_std=$(cat); typeset -p t_std) )"
+    GET_STDERR=$t_err
+    GET_STDOUT=$t_std
+}
+
+# NOTE: Obtêm o status do serviço LBI retornando 1 para rodando e 0 para 
+# parado! By Questor
+GET_LBI_STATUS_RTN=""
+get_lbi_status() {
+    GET_LBI_STATUS_RTN=""
+    get_stderr_stdout "cd $SCRIPTDIR && $PYTHON2/bin/python lbindex status"
+    if [[ $GET_STDERR = *"is running"* ]]; then
+        GET_LBI_STATUS_RTN=1
+    else
+        GET_LBI_STATUS_RTN=0
+    fi
+}
+
+# NOTE: Para o serviço LBI! By Questor
+stop_lbi() {
+    printf "Stopping lbindex:"
+    get_lbi_status
+    if [ ${GET_LBI_STATUS_RTN} -eq 1 ]; then
+        get_stderr_stdout "cd $SCRIPTDIR && $PYTHON2/bin/python lbindex stop"
+        if [[ $GET_STDERR != *"Daemon not running"* ]]; then
+            echo "                                           [  OK  ]"
+        else
+            echo "                                           [FAILED]"
+        fi
+    else
+        echo "                                           [FAILED]"
+    fi
+}
+
+# NOTE: Inicia o serviço LBI. O comando "jobs" evita que o script fique 
+# presso na linha de execução! By Questor
+start_lbi() {
+    printf "Starting lbindex:"
+    get_lbi_status
+    if [ ${GET_LBI_STATUS_RTN} -eq 0 ]; then
+        rm -f lbistdout
+        cd $SCRIPTDIR
+        jobs &>/dev/null
+        eval "$PYTHON2/bin/python lbindex start 2> lbistderr 1> lbistdout &"
+        new_job_started="$(jobs -n)"
+        if [ -n "$new_job_started" ]; then
+            PID=$!
+        else
+            PID=
+        fi
+
+        # NOTE: Como a saída p/ "lbistderr" e "lbistdout" é assíncrona usamos
+        # um sleep de 2 segundos (pode haver dessincronia)! By Questor
+        sleep 2
+
+        LBISTDOUT=$(<lbistdout)
+        LBISTDERR=$(<lbistderr)
+        rm -f lbistdout
+        rm -f lbistderr
+
+        if [[ $LBISTDOUT != *"Starting daemon ..."* ]] && [[ $LBISTDERR != "" ]]; then
+            echo "                                           [FAILED]"
+            echo "$LBISTDOUT$LBISTDERR"
+            stop_pserve "only_pserve"
+        else
+            echo "                                           [  OK  ]"
+        fi
+    else
+        echo ""
+    fi
+}
+
+# NOTE: Printa o status do serviço LBI! By Questor
+status_lbi() {
+    get_lbi_status
+    if [ ${GET_LBI_STATUS_RTN} -eq 0 ]; then
+        echo "lbindex is stopped"
+    else
+        echo "lbindex is running..."
+    fi
+}
+
+# NOTE: Reinicia o LBI! By Questor
+restart_lbi() {
+    stop_lbi
+    start_lbi
+}
+
+# NOTE: Interface para passar comandos p/ LBI ou exibir o help! By Questor
+CMD_NOW=""
+cmd_lbi() {
+    if [[ "$CMD_NOW" != *"-h"* ]] && [[ "$CMD_NOW" != *"--help"* ]]; then
+        printf "Performing cmd:"
+    fi
+    get_lbi_status
+    if [ ${GET_LBI_STATUS_RTN} -eq 1 ]; then
+        get_stderr_stdout "cd $SCRIPTDIR && $PYTHON2/bin/python lbindex $CMD_NOW"
+        if [[ $GET_STDERR != "" ]]; then
+            echo "                                             [FAILED]"
+            echo "$GET_STDOUT$GET_STDERR"
+        else
+            if [[ "$CMD_NOW" != *"-h"* ]] && [[ "$CMD_NOW" != *"--help"* ]]; then
+                echo "                                             [  OK  ]"
+            fi
+            echo "$GET_STDOUT"
+        fi
+    else
+        echo "                                             [FAILED]"
+    fi
+}
+
+if [[ "$@" != *"cmd"* ]] && [[ "$@" != *"-h"* ]] && [[ "$@" != *"--help"* ]]; then
+
+    # NOTE: Usamos "$@" ao invés "$1" por ser mais seguro, pois "$@" traz todos os 
+    # parâmetros após diferente de "$1" onde "start foo" dispararia "start" no 
+    # serviço! By Questor
+    case "$@" in
+        start)
+            start_pserve
+        ;;
+        stop)
+            stop_pserve
+        ;;
+        restart)
+            restart_pserve
+        ;;
+        status)
+            status_pserve
+        ;;
+        *)
+            echo "Usage: pservemg {start|stop|restart|status|(cmd: only for lbindex)|(-h|--help: only for lbindex)}"
+            exit 1
+        ;;
+    esac
+else
+    CMD_NOW="$@"
+    cmd_lbi
+fi
+
+exit 1

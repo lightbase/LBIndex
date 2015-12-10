@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..views.response import HTTPCode
+from httpcode import HTTPCode
 
 
 class HTTPServiceException(Exception):

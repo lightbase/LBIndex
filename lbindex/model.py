@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 __author__ = 'eduardo'
@@ -55,8 +54,8 @@ class LogBase(object):
 
         dt_last_up_orig = Field(**dict(
             name='dt_last_up_orig',
-            description='Data e Hora no formato DD/MM/AAAA - HH:MM:SS '
-                        'da última atualização do registro que originou o erro.',
+            description=('Data e Hora no formato DD/MM/AAAA - HH:MM:SS '
+                'da última atualização do registro que originou o erro.'),
             alias='Data de Atualização',
             datatype='DateTime',
             indices=['Ordenado', 'Textual'],
@@ -168,7 +167,8 @@ class LogBase(object):
         Get document by ID on base
         """
 
-        url = self.rest_url + '/' + self.lbbase.metadata.name + '/doc/' + id_doc
+        url = (self.rest_url + '/' + self.lbbase.metadata.name + 
+            '/doc/' + id_doc)
         response = requests.get(url)
         if response.status_code > 300:
             return None
@@ -185,5 +185,7 @@ class LogBase(object):
             response = self.baserest.get(self.lbbase)
             return True
         except HTTPError as e:
-            logger.error("Base %s not found\n%s", self.lbbase.metadata.name, e.strerror)
+            logger.error(
+                "Base %s not found\n%s", 
+                self.lbbase.metadata.name, e.strerror)
             return False

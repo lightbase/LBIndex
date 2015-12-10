@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import json
@@ -137,9 +136,11 @@ class LBRest():
                     fail_content = req._content
                 else:
                     fail_content = str(e)
-                logger.error("""
-                    Erro ao obter a lista bases para indexação. URL: %s. FALHA: %s
-                """ % (config.REST_URL, fail_content))
+                logger.error(
+                    ("Erro ao obter a lista bases para indexação. "
+                        "URL: %s. FALHA: %s") % (
+                        config.REST_URL, 
+                        fail_content))
         return bases
 
     def get_passed_registries(self):
@@ -384,7 +385,10 @@ class LBRest():
     def index_member(self, registry, id, dt_last_up):
         """Criar o índice textual para cada registro."""
 
-        logger.info('Indexando registro %s da base %s na url %s ...' % (str(id), self.base, self.idx_exp_url))
+        logger.info(
+            'Indexando registro %s da base %s na url %s ...' % (
+                str(id), 
+                self.base, self.idx_exp_url))
 
         try:
 
@@ -395,9 +399,10 @@ class LBRest():
                           registry, id=id)
             return True
         except Exception as e:
-            error_msg = """
-                Erro ao indexar registro %s da base %s na url %s'. Mensagem de erro: %s
-            """ % (str(id), self.base, self.idx_exp_url, str(e))
+            error_msg = ("Erro ao indexar registro %s da base %s na url %s'. "
+                "Mensagem de erro: %s") % (
+                str(id), 
+                self.base, self.idx_exp_url, str(e))
             logger.error(error_msg)
 
             # TODO: Pq dois logs? By Questor

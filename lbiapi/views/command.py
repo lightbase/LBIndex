@@ -2,8 +2,8 @@
 
 from . import CustomView
 from response import Cmd
-from .error import HTTPServiceException
-
+from error import HTTPServiceException
+from response import HTTPCode
 
 class CommandView(CustomView):
     """Tratar a visão referente aos comandos.
@@ -25,15 +25,15 @@ class CommandView(CustomView):
     def post_command(self):
         """Tratar o verbo HTTP POST."""
 
-        try:
-            # test = 2/0
-            test = 2/2
-        except Exception as e:
-            raise HTTPServiceException(self.http_codes.CODE500, str(e))
+        # try:
+            # # test = 2/0
+            # test = 2/2
+        # except Exception as e:
+            # raise HTTPServiceException(HTTPCode().CODE500, str(e))
 
         params, method = self.split_req(self.request)
         result = self.context.post_command(params)
-        cmds = Cmd(result, self.http_codes.CODE200)
+        cmds = Cmd(result, HTTPCode().CODE200)
         self.cmds = cmds
 
         return self.render_response()
@@ -41,14 +41,14 @@ class CommandView(CustomView):
     def get_command(self):
         """Tratar o verbo HTTP GET."""
 
-        raise HTTPServiceException(self.http_codes.CODE501)
+        raise HTTPServiceException(HTTPCode().CODE501)
 
     def put_command(self):
         """Tratar o verbo HTTP PUT."""
 
-        raise HTTPServiceException(self.http_codes.CODE501)
+        raise HTTPServiceException(HTTPCode().CODE501)
 
     def delete_command(self):
         """Tratar o verbo HTTP DELETE."""
 
-        raise HTTPServiceException(self.http_codes.CODE501)
+        raise HTTPServiceException(HTTPCode().CODE501)

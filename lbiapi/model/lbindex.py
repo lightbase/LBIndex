@@ -6,8 +6,10 @@ import time
 import tempfile
 import subprocess
 
-from .. globals import BASE_DIR
-
+from ..globals import BASE_DIR
+from ..globals import PY_BASE_DIR
+from ..lib.httpcode import HTTPCode
+from ..lib.exception import HTTPServiceException
 
 class LbIndex():
     """API para o o serviço LBI.
@@ -35,9 +37,28 @@ class LbIndex():
             str: Retorno do LBI.
         """
 
-        cmd_vl = ["/usr/local/lbneo/virtenvlb2.6/bin/python", "lbindex", "start"]
-        output = self.ez_subprocess(cmd_vl)
-        return output
+        cmd_vl = [
+            PY_BASE_DIR, 
+            "lbindex", 
+            "start"
+        ]
+
+        out, err = self.ez_subprocess(cmd_vl)
+
+        # NOTE: Trata-se de um workaround para a saída do o serviço LBI. 
+        # Por alguma razão o valor "stdout" vem repetido 3 vêses 
+        # quando cpturado por "Popen" em determinadas circunstâncias! 
+        # By Questor
+        if out == ("Starting daemon ...\nStarting "
+                "daemon ...\nStarting daemon ...\n"):
+            out = "Starting daemon ..."
+
+        # NOTE: Se "stderr" possui conteúdo, então ocorreu um erro, 
+        # salvo exeção! By Questor
+        if err and not "Daemon already running" in err:
+            raise HTTPServiceException(HTTPCode().CODE500, out + err)
+
+        return out + err
 
     def stop(self):
         """Parar o serviço LBI.
@@ -46,9 +67,20 @@ class LbIndex():
             str: Retorno do LBI.
         """
 
-        cmd_vl = ["/usr/local/lbneo/virtenvlb2.6/bin/python", "lbindex", "stop"]
-        output = self.ez_subprocess(cmd_vl)
-        return output
+        cmd_vl = [
+            PY_BASE_DIR, 
+            "lbindex", 
+            "stop"
+        ]
+
+        out, err = self.ez_subprocess(cmd_vl)
+
+        # NOTE: Se "stderr" possui conteúdo, então ocorreu um erro, 
+        # salvo exeção! By Questor
+        if err and not "Daemon not running" in err:
+            raise HTTPServiceException(HTTPCode().CODE500, out + err)
+
+        return out + err
 
     def status(self):
         """Status do serviço LBI.
@@ -57,9 +89,20 @@ class LbIndex():
             str: Retorno do LBI.
         """
 
-        cmd_vl = ["/usr/local/lbneo/virtenvlb2.6/bin/python", "lbindex", "status"]
-        output = self.ez_subprocess(cmd_vl)
-        return output
+        cmd_vl = [
+            PY_BASE_DIR, 
+            "lbindex", 
+            "status"
+        ]
+
+        out, err = self.ez_subprocess(cmd_vl)
+
+        # NOTE: Se "stderr" possui conteúdo, então ocorreu um erro, 
+        # salvo exeção! By Questor
+        if err and not "is running" in err and not "is not running" in err:
+            raise HTTPServiceException(HTTPCode().CODE500, out + err)
+
+        return out + err
 
     def restart(self):
         """Reiniciar o serviço LBI.
@@ -68,9 +111,28 @@ class LbIndex():
             str: Retorno do LBI.
         """
 
-        cmd_vl = ["/usr/local/lbneo/virtenvlb2.6/bin/python", "lbindex", "restart"]
-        output = self.ez_subprocess(cmd_vl)
-        return output
+        cmd_vl = [
+            PY_BASE_DIR, 
+            "lbindex", 
+            "restart"
+        ]
+
+        out, err = self.ez_subprocess(cmd_vl)
+
+        # NOTE: Trata-se de um workaround para a saída do o serviço LBI. 
+        # Por alguma razão o valor "stdout" vem repetido 3 vêses 
+        # quando cpturado por "Popen" em determinadas circunstâncias! 
+        # By Questor
+        if (out == "Restarting daemon ...\nRestarting daemon "
+                "...\nRestarting daemon ...\n"):
+            out = "Restarting daemon ..."
+
+        # NOTE: Se "stderr" possui conteúdo, então ocorreu um erro, 
+        # salvo exeção! By Questor
+        if err and not "Daemon not running" in err:
+            raise HTTPServiceException(HTTPCode().CODE500, out + err)
+
+        return out + err
 
     def index(self):
         """Disparar a indexação no serviço LBI.
@@ -79,9 +141,20 @@ class LbIndex():
             str: Retorno do LBI.
         """
 
-        cmd_vl = ["/usr/local/lbneo/virtenvlb2.6/bin/python", "lbindex", "index"]
-        output = self.ez_subprocess(cmd_vl)
-        return output
+        cmd_vl = [
+            PY_BASE_DIR, 
+            "lbindex", 
+            "index"
+        ]
+
+        out, err = self.ez_subprocess(cmd_vl)
+
+        # NOTE: Se "stderr" possui conteúdo, então ocorreu um erro! 
+        # By Questor
+        if err:
+            raise HTTPServiceException(HTTPCode().CODE500, out + err)
+
+        return out + err
 
     def cmd(self, action):
         """Passar comandos específicos para o LBI.
@@ -93,9 +166,22 @@ class LbIndex():
             str: Retorno do LBI.
         """
 
-        cmd_vl = ["/usr/local/lbneo/virtenvlb2.6/bin/python", "lbindex", "cmd", "-a", action]
-        output = self.ez_subprocess(cmd_vl)
-        return output
+        cmd_vl = [
+            PY_BASE_DIR, 
+            "lbindex", 
+            "cmd", 
+            "-a", 
+            action
+        ]
+
+        out, err = self.ez_subprocess(cmd_vl)
+
+        # NOTE: Se "stderr" possui conteúdo, então ocorreu um erro! 
+        # By Questor
+        if err:
+            raise HTTPServiceException(HTTPCode().CODE500, out + err)
+
+        return out + err
 
     def ez_subprocess(self, cmd_vl):
         """Facilitar criar subprocessos sem bloquer o serviço HTTP.
@@ -104,7 +190,7 @@ class LbIndex():
             cmd_vl (str): Valor do argumento a ser passado para o LBI.
 
         Returns:
-            str: Retorno do LBI ("stderr" e "stdout").
+            (str, str): Retorno do LBI ("stderr" e "stdout").
         """
 
         # NOTE: Usamos arquivos para "stderr" e "stdout" para que a não 
@@ -137,17 +223,4 @@ class LbIndex():
         outFile.close()
         errFile.close()
 
-        # NOTE: Trata-se de um workaround para a saída do o serviço LBI. 
-        # Por alguma razão o valor "stdout" vem repetido 3 vêses 
-        # quando cpturado por "Popen" em determinadas circunstâncias! 
-        # By Questor
-        if out == "Starting daemon ...\nStarting daemon ...\nStarting daemon ...\n":
-            out = "Starting daemon ..."
-        if out == "Restarting daemon ...\nRestarting daemon ...\nRestarting daemon ...\n":
-            out = "Restarting daemon ..."
-
-        # NOTE: To debug! By Questor
-        # print(str(out))
-        # print(str(err))
-
-        return out + err
+        return (out, err)

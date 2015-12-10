@@ -169,7 +169,7 @@ if __name__ == "__main__":
             args = []
             version = str(pkg_resources.require("lbindex")[0].version)
             try:
-                opts, args = getopt.getopt(sys.argv[1:], 'h', ["help"])
+                opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
                 if not opts:
                     raise getopt.GetoptError("")
                 print(
@@ -186,7 +186,8 @@ Arguments:
    -a  or  --action     Command to execute (need cmd arg)
    -h  or  --help       Print Help (this message) and exit""" % (version))
             except getopt.GetoptError as e:
-                print("Unknown option(s) and/or argument(s): \"" + str(sys.argv[1:]) + "\"")
+                print("Unknown option(s) and/or argument(s): \"" + 
+                    str(sys.argv[1:]) + "\"")
                 print("More info with: \"lbindex -h\"")
                 sys.exit(0)
                 sys.exit(2)

@@ -2,7 +2,7 @@
 
 from pyramid.renderers import render_to_response
 from response import Response
-from response import HTTPCode
+from ..lib.httpcode import HTTPCode
 
 class CustomView(Response):
     """Visão padrão do sistema.
