@@ -1,14 +1,17 @@
 #!/bin/bash
 
-# NOTE: Trata-se de um utilitário p/ usar o "pserve" como um serviço 
-# padrão. Embora, "pserve" não seja indicado para produção optamos por 
-# "pserve" pq os comandos recebidos pelo LBI são os mínimos possíveis. 
-# Perceba ainda que o controle desse serviço é todo "stand alone" (PID 
-# e tudo o mais). Isso é útil para termos vários serviços funcionando 
-# de forma independente e em portas diferentes! Esse utilitário tb 
-# facilita o controle do LBIndex oferecendo um nova "cara" p/ o mesmo. 
-# Até então a implementação atual do esquema em pauta é provisória! 
-# By Questor
+export LANG=en_US.UTF-8
+# NOTE: A linha imediatemente acima evita problemas de compatibilidade com o 
+# UTF-8! By Questor
+
+# NOTE: Trata-se de um utilitário p/ usar o "pserve" como um serviço padrão. 
+# Embora, "pserve" não seja indicado para produção optamos por "pserve" pq os 
+# comandos recebidos pelo LBI são os mínimos possíveis. Perceba ainda que o 
+# controle desse serviço é todo "stand alone" (PID e tudo o mais). Isso é útil 
+# para termos vários serviços funcionando de forma independente e em portas 
+# diferentes! Esse utilitário tb facilita o controle do LBIndex oferecendo um 
+# nova "cara" p/ o mesmo. Até então a implementação atual do esquema em pauta 
+# é provisória! By Questor
 
 # NOTE: P/ tornar executável! By Questor
 # export PATH=$PATH:<script_dir>
@@ -22,8 +25,8 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PYTHON2="/usr/local/lbneo/virtenvlb2.6"
 
 # NOTE: Para o serviço pserve (e o LBI na sequência)! By Questor
-stop_pserve() {
-    printf "Stopping pserve:"
+stop_services() {
+    printf "Stopping http service:"
     get_pserve_status
     if [ "$GET_PSERVE_STATUS_RTN" != "" ]; then
 
@@ -31,9 +34,9 @@ stop_pserve() {
         # casos! By Questor
         kill -9 "$GET_PSERVE_STATUS_RTN" &
         rm -f pservepid
-        echo "                                            [  OK  ]"
+        echo "                                      [  OK  ]"
     else
-        echo "                                            [FAILED]"
+        echo "                                      [FAILED]"
     fi
     # NOTE: Nos casos onde o comando "start" falha p/ a parte do LBI, não se 
     # faz necessário tentar para-lo já que ele não está rodando! By Questor
@@ -44,14 +47,14 @@ stop_pserve() {
 
 # NOTE: Inicia o serviço pserve (e o LBI na sequência). O comando "jobs" evita 
 # que o script fique presso na linha de execução! By Questor
-start_pserve() {
+start_services() {
     echo "Starting services..."
     get_pserve_status
     if [ "$GET_PSERVE_STATUS_RTN" == "" ]; then
-        printf "Starting pserve:"
+        printf "Starting http service:"
         rm -f pserveout
         jobs &>/dev/null
-        eval "$PYTHON2/bin/pserve development.ini >pserveout 2>&1 &"
+        eval "$PYTHON2/bin/pserve $SCRIPTDIR/production.ini >pserveout 2>&1 &"
         new_job_started="$(jobs -n)"
         if [ -n "$new_job_started" ]; then
             PID=$!
@@ -67,11 +70,11 @@ start_pserve() {
         rm -f pserveout
 
         if [[ $PSERVEOUT != "" ]]; then
-            echo "                                            [FAILED]"
+            echo "                                      [FAILED]"
             echo "$PSERVEOUT"
         else
             printf "$PID" > pservepid
-            echo "                                            [  OK  ]"
+            echo "                                      [  OK  ]"
             start_lbi
         fi
     # else
@@ -80,20 +83,31 @@ start_pserve() {
 }
 
 # NOTE: Printa o status do serviço pserve (e do LBI na sequência)! By Questor
-status_pserve() {
+status_services() {
     get_pserve_status
     if [ "$GET_PSERVE_STATUS_RTN" == "" ]; then
-        echo "pserve is stopped"
+        echo "http service is stopped"
     else
-        echo "pserve (pid  $GET_PSERVE_STATUS_RTN) is running..."
+        echo "http service (pid  $GET_PSERVE_STATUS_RTN) is running..."
     fi
     status_lbi
 }
 
 # NOTE: Reinicia o serviço pserve (e o LBI na sequência)! By Questor
-restart_pserve() {
-    stop_pserve
-    start_pserve
+restart_services() {
+    stop_services
+    start_services
+}
+
+# NOTE: Exibe a ajuda do LBI! By Questor
+help_services() {
+    get_stderr_stdout "cd $SCRIPTDIR && $PYTHON2/bin/python lbindex help"
+    if [[ $GET_STDERR != "" ]]; then
+        echo "                                             [FAILED]"
+        echo "$GET_STDOUT$GET_STDERR"
+    else
+        echo "$GET_STDOUT"
+    fi
 }
 
 # NOTE: Obtêm o arquivo "PID" ("pservepid") criado por "pservemg" para 
@@ -184,7 +198,7 @@ start_lbi() {
         if [[ $LBISTDOUT != *"Starting daemon ..."* ]] && [[ $LBISTDERR != "" ]]; then
             echo "                                           [FAILED]"
             echo "$LBISTDOUT$LBISTDERR"
-            stop_pserve "only_pserve"
+            stop_services "only_pserve"
         else
             echo "                                           [  OK  ]"
         fi
@@ -239,19 +253,22 @@ if [[ "$@" != *"cmd"* ]] && [[ "$@" != *"-h"* ]] && [[ "$@" != *"--help"* ]]; th
     # serviço! By Questor
     case "$@" in
         start)
-            start_pserve
+            start_services
         ;;
         stop)
-            stop_pserve
+            stop_services
         ;;
         restart)
-            restart_pserve
+            restart_services
         ;;
         status)
-            status_pserve
+            status_services
+        ;;
+        help)
+            help_services
         ;;
         *)
-            echo "Usage: pservemg {start|stop|restart|status|(cmd: only for lbindex)|(-h|--help: only for lbindex)}"
+            echo "Usage: pservemg {start|stop|restart|status|help|cmd -a}"
             exit 1
         ;;
     esac

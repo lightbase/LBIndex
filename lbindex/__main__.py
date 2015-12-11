@@ -97,6 +97,26 @@ class LBIndex(Daemon):
             sys.stderr.write(message.format(self.pidfile))
             sys.exit(1)
 
+    def help(self):  
+        """Exibir o help."""
+
+        version = str(pkg_resources.require("lbindex")[0].version)
+        print(
+"""lbindex - LightBase Textual Index Service %s
+
+usage: lbindex <start>                     Start the service
+   or: lbindex <stop>                      Stop the service
+   or: lbindex <restart>                   Restart the service
+   or: lbindex <status>                    Get service status
+   or: lbindex <index>                     Index/reindex indexable bases
+   or: lbindex <help>                      Print Help (this message) and exit
+   or: lbindex <cmd <-a|-h> [value]>       Pass specific commands
+
+Arguments:
+   -a  or  --action     Command to execute (need cmd arg)
+   -h  or  --help       Print Help (this message) and exit (may need cmd arg)""" 
+            % (version))
+
     # TODO: Estático por que? By Questor
     @staticmethod
     def index():
@@ -164,27 +184,17 @@ if __name__ == "__main__":
             print("Atualizando índice para as bases...")
             daemon.index()
             sys.exit(0)
+        elif 'help' == sys.argv[1]:
+            daemon.help()
+            sys.exit(0)
         else:
             opts = []
             args = []
-            version = str(pkg_resources.require("lbindex")[0].version)
             try:
                 opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
                 if not opts:
                     raise getopt.GetoptError("")
-                print(
-"""lbindex - LightBase Textual Index Service %s
-
-usage: lbindex <start>                     Start the service
-   or: lbindex <stop>                      Stop the service
-   or: lbindex <restart>                   Restart the service
-   or: lbindex <status>                    Get service status
-   or: lbindex <index>                     Index/reindex indexable bases
-   or: lbindex <cmd -a <value>>            Pass specific commands
-
-Arguments:
-   -a  or  --action     Command to execute (need cmd arg)
-   -h  or  --help       Print Help (this message) and exit""" % (version))
+                daemon.help()
             except getopt.GetoptError as e:
                 print("Unknown option(s) and/or argument(s): \"" + 
                     str(sys.argv[1:]) + "\"")
