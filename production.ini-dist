@@ -1,16 +1,80 @@
 [LBIndex]
 
-### Url de acesso à api do lightbase
-rest_url: http://0.0.0.0/api
+###
+# Url de acesso à api do lightbase.
+###
+rest_url: http://172.16.13.172/lbgenerator
 
-### Se marcado com 'true', todos os registros serão indexados, mesmo os que foram indexados anteriormente
+###
+# Se marcado com "true", todos os registros serão indexados, mesmo 
+# os que foram indexados anteriormente.
+###
 force_index: false
 
-### limite padrão de registros 
-default_limit: 200
+###
+# Limite padrão de registros.
+###
+default_limit: 500
 
 [Daemon]
 
+###
+# Arquivos de pid e log. Útil na configuração de vários serviços!
+###
 pidfile_path: /var/run/lbindex.pid
 logfile_path: /var/log/lbindex.log
 
+###
+# App configuration.
+# http://docs.pylonsproject.org/projects/pyramid/en/1.6-branch/narr/environment.html
+###
+
+[app:main]
+use = egg:LBIApi
+
+pyramid.reload_templates = true
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.default_locale_name = en
+
+###
+# WSGI server configuration.
+###
+
+[server:main]
+use = egg:waitress#main
+host = 0.0.0.0
+port = 6543
+
+###
+# logging configuration
+# http://docs.pylonsproject.org/projects/pyramid/en/1.6-branch/narr/logging.html
+###
+
+[loggers]
+keys = root, lbiapi
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console
+
+[logger_lbiapi]
+level = DEBUG
+handlers =
+qualname = lbiapi
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s:%(lineno)s][%(threadName)s] %(message)s

@@ -1,4 +1,5 @@
 #!/bin/bash
+# chkconfig: 2345 99 01
 # description: Esquema de inicialização do LBIndex
 # processname: lbindex
 
