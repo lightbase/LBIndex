@@ -22,10 +22,9 @@ requires = [
     'traceback2 == 1.4.0',
     'unittest2 == 1.0.1',
     'urllib3 == 1.10.4',
-    'pyramid',
-    'pyramid_chameleon',
-    'pyramid_debugtoolbar',
-    'waitress'
+    'pyramid == 1.6b2',
+    'pyramid_chameleon == 0.3',
+    'waitress == 0.8.10'
 ]
 
 '''
@@ -34,7 +33,7 @@ http://programmers.stackexchange.com/questions/24987/what-exactly-is-the-build-n
 '''
 setup(
     name = "LBIndex",
-    version = "0.1.1.0",
+    version = "1.0.0.0",
     long_description=README + "\n\n" + CHANGES,
     author = "LightBase",
     author_email = "",

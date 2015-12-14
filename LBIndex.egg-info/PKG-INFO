@@ -1,12 +1,12 @@
 Metadata-Version: 1.0
 Name: LBIndex
-Version: 0.1.1.0
+Version: 1.0.0.0
 Summary: Indexer Daemon for the neo-lightbase service
 Home-page: https://pypi.python.org/pypi/LBIndex
 Author: LightBase
 Author-email: UNKNOWN
 License: GPLv2
-Description: LBIApi README
+Description: LBIndex README
         
         
         0.0
