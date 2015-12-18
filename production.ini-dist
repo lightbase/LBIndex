@@ -3,7 +3,7 @@
 ###
 # Url de acesso à api do lightbase.
 ###
-rest_url: http://172.16.13.172/lbgenerator
+rest_url: http://<MACHINE_IP_OR_NAME>/lbgenerator
 
 ###
 # Se marcado com "true", todos os registros serão indexados, mesmo 
@@ -45,7 +45,7 @@ pyramid.default_locale_name = en
 [server:main]
 use = egg:waitress#main
 host = 0.0.0.0
-port = 6543
+port = <HTTP_SERVICE_PORT_NUM>
 
 ###
 # logging configuration

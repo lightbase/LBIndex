@@ -18,7 +18,7 @@ export LANG=en_US.UTF-8
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Note: Informar o caminho python2 onde o LBIndex está instalado! By Questor
-PYTHON2="/usr/local/lbneo/virtenvlb2.6"
+PYTHON2="<VIRTUALENV_PATH>"
 
 # NOTE: Para o serviço pserve (e o LBI na sequência)! By Questor
 stop_services() {

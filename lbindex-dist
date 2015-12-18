@@ -3,4 +3,4 @@
 # description: Esquema de inicialização do LBIndex
 # processname: lbindex
 
-. /usr/local/lbneo/virtenvlb2.6/src/LBIndex/lbindexmg
+. <LBINDEXMG_PATH>
