@@ -13,6 +13,10 @@ def set_config():
     global PIDFILE_PATH
     global LOGFILE_PATH
     global DEFAULT_LIMIT
+    global BASE_FORCE
+    global ES_URL
+    global NM_BASE
+    global TIME_IDX
 
     #---------------------#
     # Configuration Start #
@@ -33,6 +37,10 @@ def set_config():
     # Daemon configuration 
     PIDFILE_PATH = config.get('Daemon', 'pidfile_path')
     LOGFILE_PATH = config.get('Daemon', 'logfile_path')
+
+    ES_URL = config.get('LBIndex', 'es_url')
+    NM_BASE = config.get('LBIndex', 'nm_base')
+    TIME_IDX = config.get('LBIndex', 'time_idx')
 
     #-------------------#
     # Configuration End #

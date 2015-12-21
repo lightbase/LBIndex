@@ -97,9 +97,21 @@ class LBRest():
                 "limit": null
             }"""
             req = requests.get(config.REST_URL, params={'$$':params})
-            req.raise_for_status()
-            response = req.json()
-            bases = response["results"]
+            if config.FORCE_INDEX == True:
+                data = [ ]
+                results = dict({
+                    u'metadata' : {
+                        u'idx_exp_url'  : u''+config.ES_URL+'',
+                        u'name'         : u''+config.NM_BASE+'',
+                        u'idx_exp_time' : u''+config.TIME_IDX+''
+                    }
+                })
+                data.append(results)
+                bases = data
+            else:
+                req.raise_for_status()
+                response = req.json()
+                bases = response["results"]
         except Exception as e:
             bases = [ ]
             req = None
