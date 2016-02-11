@@ -69,7 +69,11 @@ class Daemon:
             f.write(pid + '\n')
 
     def delpid(self):
-        os.remove(self.pidfile)
+        try:
+            os.remove(self.pidfile)
+        except FileNotFoundError as e:
+            message = "%s" % e
+            sys.stdout.write(message)
 
     def start(self):
         """Start the daemon."""
@@ -77,7 +81,7 @@ class Daemon:
         # NOTE: Check for a pidfile to see if the daemon already 
         # runs!
         try:
-            with open(self.pidfile,'r') as pf:
+            with open(self.pidfile, 'r') as pf:
                 pid = int(pf.read().strip())
         except IOError:
             pid = None
@@ -94,8 +98,13 @@ class Daemon:
         self.killer(os.getpid())
 
         # NOTE: Start the daemon!
-        self.daemonize()
-        self.run()
+        try:
+            self.daemonize()
+            self.run()
+        except PermissionError as e:
+            message = "%s" % e
+            sys.stderr.write(message)
+            sys.exit(1)
 
     def stop(self):
         """Stop the daemon."""
@@ -154,10 +163,14 @@ class Daemon:
         process.
         """
 
-        process = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE)
+        process = subprocess.Popen(
+            ['ps', 'aux'],
+            stdout=subprocess.PIPE,
+            shell=False
+        )
         out, err = process.communicate()
         for line in out.splitlines():
-            if 'lbindex/ start' in line:
+            if 'lbindex/ start' in line.decode('utf-8'):
                 pid = int(line.split()[1])
 
                 if not pid == ppid:

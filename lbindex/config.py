@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError as e:
+    import configparser as ConfigParser
 
 def set_config():
 
