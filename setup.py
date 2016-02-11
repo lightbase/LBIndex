@@ -10,8 +10,8 @@ with open(os.path.join(here, 'CHANGES.txt')) as f:
 
 requires = [
     'liblightbase',
-    'argparse == 1.3.0',
-    'ConfigParser == 3.3.0r2',
+    # 'argparse == 1.4.0',
+    # 'ConfigParser == 3.3.0r2',
     'elasticsearch == 1.4.0',
     'linecache2 == 1.0.0',
     'ordereddict == 1.1',
@@ -21,10 +21,8 @@ requires = [
     'six == 1.7.2',
     'traceback2 == 1.4.0',
     'unittest2 == 1.0.1',
-    'urllib3 == 1.10.4',
-    'pyramid == 1.6b2',
+    'pyramid==1.5.1',
     'pyramid_chameleon == 0.3',
-    'waitress == 0.8.10'
 ]
 
 '''
