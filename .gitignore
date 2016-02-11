@@ -40,7 +40,7 @@ nosetests.xml
 .project
 .pydevproject
 
-development.ini
+#development.ini
 alembic.ini
 *.wsgi
 .idea
