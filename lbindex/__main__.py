@@ -159,7 +159,6 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Missing arguments!")
         print("More info with: \"lbindex -h\"")
-        sys.exit(0)
         sys.exit(2)
 
     if len(sys.argv) == 2:
@@ -187,6 +186,10 @@ if __name__ == "__main__":
         elif 'help' == sys.argv[1]:
             daemon.help()
             sys.exit(0)
+        elif 'run' == sys.argv[1]:
+            print("Running daemon...")
+            daemon.run()
+            sys.exit(0)
         else:
             opts = []
             args = []
@@ -199,7 +202,6 @@ if __name__ == "__main__":
                 print("Unknown option(s) and/or argument(s): \"" + 
                     str(sys.argv[1:]) + "\"")
                 print("More info with: \"lbindex -h\"")
-                sys.exit(0)
                 sys.exit(2)
 
     if sys.argv[1] == 'cmd' and len(sys.argv) >= 3:

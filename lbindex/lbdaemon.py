@@ -65,7 +65,7 @@ class Daemon:
         atexit.register(self.delpid)
 
         pid = str(os.getpid())
-        with open(self.pidfile,'w+') as f:
+        with open(self.pidfile, 'w+') as f:
             f.write(pid + '\n')
 
     def delpid(self):
@@ -111,7 +111,7 @@ class Daemon:
 
         # NOTE: Get the pid from the pidfile!
         try:
-            with open(self.pidfile,'r') as pf:
+            with open(self.pidfile, 'r') as pf:
                 pid = int(pf.read().strip())
         except IOError:
             pid = None
