@@ -16,7 +16,7 @@ requires = [
     'linecache2 == 1.0.0',
     'ordereddict == 1.1',
     'pyelasticsearch == 0.6.1',
-    'requests == 2.3.0',
+    'requests == 2.20.0',
     'simplejson == 3.5.3',
     'six == 1.7.2',
     'traceback2 == 1.4.0',
