@@ -24,7 +24,7 @@ requires = [
     'urllib3 == 1.10.4',
     'pyramid == 1.6b2',
     'pyramid_chameleon == 0.3',
-    'waitress == 0.8.10'
+    'waitress == 1.4.2'
 ]
 
 '''
