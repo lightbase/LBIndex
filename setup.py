@@ -21,7 +21,7 @@ requires = [
     'six == 1.7.2',
     'traceback2 == 1.4.0',
     'unittest2 == 1.0.1',
-    'urllib3 == 1.10.4',
+    'urllib3 == 1.26.5',
     'pyramid == 1.6b2',
     'pyramid_chameleon == 0.3',
     'waitress == 0.8.10'
